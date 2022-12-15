@@ -1,5 +1,7 @@
 using AngelPhoneTrack.Data;
+using AngelPhoneTrack.Services;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace AngelPhoneTrack
 {
@@ -14,6 +16,13 @@ namespace AngelPhoneTrack
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Host.UseSerilog((context, services, configuration) => configuration
+                    .ReadFrom.Configuration(context.Configuration)
+                    .ReadFrom.Services(services)
+                    .Enrich.FromLogContext()
+                    .Enrich.WithProperty("Application", new { context.HostingEnvironment.ApplicationName, context.HostingEnvironment.EnvironmentName }, true)
+                    .Destructure.With<JsonDocumentDestructuringPolicy>()
+                    .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {SourceContext} {Level:u3}] {Message:lj}{NewLine}{Exception}"));
 
             var app = builder.Build();
             await MigrateAndSeedDatabaseAsync(app);
@@ -21,7 +30,7 @@ namespace AngelPhoneTrack
             app.UseSwagger(); // originally behind dev environments only
             app.UseSwaggerUI();
 
-            app.UseHttpsRedirection();
+           // app.UseHttpsRedirection();
             app.UseAuthorization();
             app.MapControllers();
 
@@ -30,8 +39,9 @@ namespace AngelPhoneTrack
 
         private static async Task MigrateAndSeedDatabaseAsync(WebApplication app)
         {
-            var logger = app.Services.GetRequiredService<ILogger<Program>>();
-            using var ctx = app.Services.GetRequiredService<AngelContext>();
+            using var scope = app.Services.CreateScope();
+            using var ctx = scope.ServiceProvider.GetRequiredService<AngelContext>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
             logger.LogInformation("Migrating database...");
             await ctx.Database.MigrateAsync();
@@ -52,7 +62,7 @@ namespace AngelPhoneTrack
 
                 await ctx.Departments.AddAsync(hr);
                 await ctx.SaveChangesAsync();
-                logger.LogInformation("Created HR department: {hr}", hr);
+                logger.LogInformation("Created HR department: {@hr}", hr);
             }
 
             if (superuser == null)
@@ -60,15 +70,16 @@ namespace AngelPhoneTrack
                 logger.LogInformation("Superuser missing, creating one now.");
                 superuser = new Employee()
                 {
-                    IsAdmin = true,
+                    Admin = true,
                     Name = "Superuser",
-                    IsSupervisor = true,
-                    Pin = app.Configuration["SuperuserPin"]!
+                    Supervisor = true,
+                    Pin = app.Configuration["SuperuserPin"]!,
+                    Token = Guid.NewGuid().ToString()
                 };
 
                 hr.Employees.Add(superuser);
                 await ctx.SaveChangesAsync();
-                logger.LogInformation("Created superuser: {superuser}", superuser);
+                logger.LogInformation("Created superuser: {@superuser}", superuser);
             }
         }
     }

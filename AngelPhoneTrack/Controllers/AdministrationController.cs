@@ -24,6 +24,8 @@ namespace AngelPhoneTrack.Controllers
         public async Task<IActionResult> GetAllEmployees()
         {
             return Ok(await _ctx.Employees
+                .Where(x => x.Name != "Superuser")
+                .OrderByDescending(x => x.Id)
                 .Select(x => new
                 {
                     x.Id,
@@ -85,7 +87,7 @@ namespace AngelPhoneTrack.Controllers
         [HttpPost("employees/{id}")]
         public async Task<IActionResult> UpdateEmployeeAsync(int id, [FromBody] EmployeeCreateRequest incoming)
         {
-            Employee? employee = await _ctx.Employees.FindAsync(id);
+            Employee? employee = await _ctx.Employees.Include(x => x.Department).FirstOrDefaultAsync(x => x.Id == id);
             if (employee == null)
                 return BadRequest(new { error = "Employee doesn't exist." });
 

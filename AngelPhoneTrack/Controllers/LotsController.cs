@@ -1,7 +1,187 @@
-﻿namespace AngelPhoneTrack.Controllers
-{
-    public class LotsController
-    {
+﻿using AngelPhoneTrack.Data;
+using AngelPhoneTrack.Filters;
+using AngelPhoneTrack.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
+namespace AngelPhoneTrack.Controllers
+{
+    [ApiController]
+    [Route("/lots")]
+    [AngelAuthorized(admin: false, supervisor: false)]
+    public class LotsController : AngelControllerBase
+    {
+        private readonly AngelContext _ctx;
+
+        public LotsController(AngelContext ctx)
+        {
+            _ctx = ctx;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetLotsAsync([FromQuery] int page = 1)
+        {
+            page = page < 1 ? 1 : page;
+            return Ok(await _ctx.Lots
+                .Select(lot => new
+                {
+                    lot.Id,
+                    lot.LotNo,
+                    lot.Count,
+                    lot.Timestamp,
+                    Assignments = lot.Assignments.Select(x => new
+                    {
+                        x.Department.Id,
+                        x.Count
+                    })
+                }).ToPagedListAsync(page, 25));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateLotAsync([FromBody] CreateLotRequest request)
+        {
+            if (request.Count < 1)
+                return BadRequest(new { error = "Needs at least one phone." });
+
+            bool existsAlready = await _ctx.Lots.AnyAsync(x => x.LotNo == request.LotNo);
+            if (existsAlready)
+                return BadRequest(new { error = "Lot already exists." });
+
+            Department? assignedDepartment = await _ctx.Departments.FindAsync(request.Department);
+            if (assignedDepartment == null)
+                return BadRequest(new { error = "Department doesn't exist." });
+
+            var departments = await _ctx.Departments.Where(x => x.IsAssignable).ToListAsync();
+            var lot = new Lot(request.LotNo, request.Count);
+
+            foreach (var department in departments)
+            {
+                var lotAssignment = new LotAssignment()
+                {
+                    Lot = lot,
+                    Count = department.Id == assignedDepartment.Id ? lot.Count : 0,
+                    Department = department,
+                };
+
+                lot.Assignments.Add(lotAssignment);
+            }
+
+
+            lot.CreateAudit(Employee!, Employee!.Department, "LOT_CREATED");
+            await _ctx.Lots.AddAsync(lot);
+            await _ctx.SaveChangesAsync();
+
+            return Ok(new
+            {
+                lot.Id,
+                lot.LotNo,
+                lot.Count,
+                lot.Timestamp,
+                Assignments = lot.Assignments.Select(x => new
+                {
+                    x.Department.Id,
+                    x.Count
+                })
+            });
+        }
+
+        [HttpPost("{id}/assignments")]
+        public async Task<IActionResult> UpdateLotAssignmentsAsync(Guid id, [FromBody] LotAssignmentRequest[] assignments)
+        {
+            var lot = await _ctx.Lots.Include(x => x.Assignments).ThenInclude(x => x.Department).FirstOrDefaultAsync(x => x.Id == id);
+            if (lot == null)
+                return BadRequest(new { error = "Lot doesn't exist." });
+
+            if (!assignments.All(x => lot.Assignments.Any(a => a.Department.Id == x.Id)))
+                return BadRequest(new { error = "Missing departments." });
+
+            if (assignments.Sum(x => x.Count) != lot.Count)
+                return BadRequest(new { error = "Mismatch of reassignment count." });
+
+            if (assignments.Any(x => x.Count < 0))
+                return BadRequest(new { error = "Cannot introduce negative." });
+
+            var oldAssignments = lot.Assignments.Select(x => new { x.Department.Id, x.Count }).ToArray();
+            foreach (var assignment in lot.Assignments)
+            {
+                var newAssignment = assignments.FirstOrDefault(x => x.Id == assignment.Department.Id);
+                assignment.Count = newAssignment!.Count;
+            }
+
+            lot.CreateAudit(Employee!, Employee!.Department, "LOT_REASSIGNED",
+                JsonSerializer.Serialize(new
+                {
+                    old = oldAssignments,
+                    updated = lot.Assignments.Select(x => new { x.Department.Id, x.Count })
+                }));
+
+            await _ctx.SaveChangesAsync();
+            return Ok(new
+            {
+                lot.Id,
+                lot.LotNo,
+                lot.Count,
+                lot.Timestamp,
+                Assignments = lot.Assignments.Select(x => new
+                {
+                    x.Department.Id,
+                    x.Count
+                })
+            });
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetLotAsync(Guid id)
+        {
+            var lot = await _ctx.Lots
+                .Include(x => x.Assignments)
+                    .ThenInclude(x => x.Department)
+                .Include(x => x.Audits)
+                    .ThenInclude(x => x.Department)
+                .Include(x => x.Notes)
+                    .ThenInclude(x => x.Department)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.LotNo,
+                    x.Count,
+                    x.Timestamp,
+                    Assignments = x.Assignments.Select(x => new
+                    {
+                        x.Department.Id,
+                        x.Count
+                    }),
+                    Notes = x.Notes.Select(x => new
+                    {
+                        x.Id,
+                        Department = x.Department.Id,
+                        x.CreatedBy,
+                        x.Data,
+                        x.Timestamp
+                    }),
+                    Audits = x.Audits.Select(x => new
+                    {
+                        x.Id,
+                        x.CreatedBy,
+                        Department = x.Department.Id,
+                        x.Type,
+                        x.Data,
+                        x.Timestamp,
+                    })
+                })
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (lot == null)
+                return BadRequest(new { error = "Lot doesn't exist." });
+
+            return Ok(lot);
+        }
+
+        public record LotAssignmentRequest(int Count, int Id);
+        public record CreateLotRequest(string LotNo, int Count, int Department);
     }
 }

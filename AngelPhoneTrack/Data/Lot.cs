@@ -5,13 +5,14 @@ namespace AngelPhoneTrack.Data
     [Index(nameof(LotNo))]
     public class Lot
     {
-        public Lot(string lotNo = null!)
+        public Lot(string lotNo = null!, int count = 0)
         {
             Assignments = new HashSet<LotAssignment>();
             Timestamp = DateTimeOffset.UtcNow;
             Audits = new HashSet<Audit>();
             Notes = new HashSet<Note>();
             LotNo = lotNo;
+            Count = count;
         }
 
         public Guid Id { get; set; }
@@ -24,7 +25,7 @@ namespace AngelPhoneTrack.Data
         public virtual ICollection<Audit> Audits { get; set; }
         public virtual ICollection<LotAssignment> Assignments { get; set; }
 
-        public Note CreateNote(Employee employee, Department department, string data)
+        public Note CreateNote(Employee employee, Department department, string data = "")
         {
             var note = new Note()
             {
@@ -37,10 +38,12 @@ namespace AngelPhoneTrack.Data
             return note;
         }
 
-        public Audit CreateAudit(string type, string data)
+        public Audit CreateAudit(Employee employee, Department department, string type, string data = "")
         {
             var audit = new Audit()
             {
+                Department = department,
+                CreatedBy = employee.Name,
                 Type = type,
                 Data = data
             };

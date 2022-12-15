@@ -150,6 +150,7 @@ namespace AngelPhoneTrack.Controllers
             {
                 Name = request.Name,
                 Description = request.Description,
+                IsAssignable = true
             };
 
             await _ctx.Departments.AddAsync(department);

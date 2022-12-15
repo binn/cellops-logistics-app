@@ -1,4 +1,6 @@
-﻿namespace AngelPhoneTrack.Services
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace AngelPhoneTrack.Services
 {
     public class PagedList<T> : List<T>
     {
@@ -25,5 +27,21 @@
             var items = source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
             return new PagedList<T>(items, count, pageNumber, pageSize);
         }
+
+        public static async Task<PagedList<T>> ToPagedListAsync(IQueryable<T> source, int pageNumber, int pageSize)
+        {
+            var count = source.Count();
+            var items = await source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+            return new PagedList<T>(items, count, pageNumber, pageSize);
+        }
+    }
+
+    public static class QuerableExtensions
+    {
+        public static PagedList<T> ToPagedList<T>(this IQueryable<T> source, int pageNumber, int pageSize) =>
+            PagedList<T>.ToPagedList(source, pageNumber, pageSize);
+
+        public static Task<PagedList<T>> ToPagedListAsync<T>(this IQueryable<T> source, int pageNumber, int pageSize) =>
+            PagedList<T>.ToPagedListAsync(source, pageNumber, pageSize);
     }
 }

@@ -19,6 +19,8 @@ namespace AngelPhoneTrack.Controllers
             _ctx = ctx;
         }
 
+        // todo: change table style on appsmith, and implement tasking (change note templates to TaskTemplates or something and figure it out form there)
+
         [HttpGet]
         public async Task<IActionResult> GetLotsAsync([FromQuery] int page = 1, [FromQuery] string? lotNo = null)
         {

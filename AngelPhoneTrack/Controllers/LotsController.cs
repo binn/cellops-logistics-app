@@ -20,10 +20,10 @@ namespace AngelPhoneTrack.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetLotsAsync([FromQuery] int page = 1)
+        public async Task<IActionResult> GetLotsAsync([FromQuery] int page = 1, [FromQuery] string? lotNo = null)
         {
             page = page < 1 ? 1 : page;
-            return Ok(await _ctx.Lots
+            var query = _ctx.Lots
                 .OrderByDescending(x => x.Audits.OrderByDescending(x => x.Timestamp).FirstOrDefault()!.Timestamp) // at least one audit should exist for lot creation
                 .Select(lot => new
                 {
@@ -36,7 +36,20 @@ namespace AngelPhoneTrack.Controllers
                         x.Department.Id,
                         x.Count
                     })
-                }).ToPagedListAsync(page, 25));
+                });
+
+            if(!string.IsNullOrWhiteSpace(lotNo))
+                query = query.Where(x => x.LotNo == lotNo);
+
+            var results = await query.ToPagedListAsync(page, 25);
+
+            return Ok(new
+            {
+                results.TotalCount,
+                results.TotalPages,
+                results.CurrentPage,
+                results
+            });
         }
 
         [HttpPost]

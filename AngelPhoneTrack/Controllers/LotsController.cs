@@ -134,6 +134,16 @@ namespace AngelPhoneTrack.Controllers
             });
         }
 
+        [HttpGet("/search/{lotNo}")]
+        public async Task<IActionResult> GetLotByLotNoAsync(string lotNo)
+        {
+            Guid? lot = await _ctx.Lots.Where(x => x.LotNo == lotNo).Select(x => x.Id).FirstOrDefaultAsync();
+            if (lot == null)
+                return BadRequest(new { error = "Lot doesn't exist. " });
+
+            return await GetLotAsync(lot.GetValueOrDefault());
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetLotAsync(Guid id)
         {

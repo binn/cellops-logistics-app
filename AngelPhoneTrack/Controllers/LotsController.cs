@@ -3,10 +3,7 @@ using AngelPhoneTrack.Filters;
 using AngelPhoneTrack.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace AngelPhoneTrack.Controllers
 {
@@ -27,6 +24,7 @@ namespace AngelPhoneTrack.Controllers
         {
             page = page < 1 ? 1 : page;
             return Ok(await _ctx.Lots
+                .OrderByDescending(x => x.Audits.OrderByDescending(x => x.Timestamp).FirstOrDefault()!.Timestamp) // at least one audit should exist for lot creation
                 .Select(lot => new
                 {
                     lot.Id,
@@ -70,7 +68,6 @@ namespace AngelPhoneTrack.Controllers
                 lot.Assignments.Add(lotAssignment);
             }
 
-
             lot.CreateAudit(Employee!, Employee!.Department, "LOT_CREATED");
             await _ctx.Lots.AddAsync(lot);
             await _ctx.SaveChangesAsync();
@@ -105,6 +102,9 @@ namespace AngelPhoneTrack.Controllers
             if (assignments.Any(x => x.Count < 0))
                 return BadRequest(new { error = "Cannot introduce negative." });
 
+            if (assignments.All(x => lot.Assignments.Any(a => a.Department.Id == x.Id && a.Count == x.Count)))
+                return BadRequest(new { error = "No change detected." });
+
             var oldAssignments = lot.Assignments.Select(x => new { x.Department.Id, x.Count }).ToArray();
             foreach (var assignment in lot.Assignments)
             {
@@ -117,7 +117,7 @@ namespace AngelPhoneTrack.Controllers
                 {
                     old = oldAssignments,
                     updated = lot.Assignments.Select(x => new { x.Department.Id, x.Count })
-                }));
+                }, new JsonSerializerOptions(JsonSerializerDefaults.Web)));
 
             await _ctx.SaveChangesAsync();
             return Ok(new

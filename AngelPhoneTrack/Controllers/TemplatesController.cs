@@ -8,7 +8,7 @@ namespace AngelPhoneTrack.Controllers
 {
     [ApiController]
     [AngelAuthorized]
-    [Route("/notes/templates")]
+    [Route("/tasks/templates")]
     public class TemplatesController : AngelControllerBase
     {
         private readonly AngelContext _ctx;
@@ -17,16 +17,18 @@ namespace AngelPhoneTrack.Controllers
             _ctx = ctx;
 
         [HttpGet]
-        public async Task<IActionResult> GetNoteTemplatesAsync()
+        public async Task<IActionResult> GetTaskTemplatesAsync()
         {
             return Ok(await _ctx.Templates.ToListAsync());
         }
 
         [HttpPost]
         [AngelAuthorized(admin: true)]
-        public async Task<IActionResult> CreateNoteTemplateAsync([FromBody] [Required(AllowEmptyStrings = false)] [MinLength(3)] string template)
+        public async Task<IActionResult> CreateTaskTemplateAsync([FromBody] [Required(AllowEmptyStrings = false)] [MinLength(3)] string template, [FromBody] string category)
         {
-            var nt = new NoteTemplate()
+            if (category != "TESTING" || category != "GRADING")
+                return BadRequest(new { error = "Bad category. Category doesn't exist." });
+            var nt = new TaskTemplate()
             {
                 Template = template
             };
@@ -40,11 +42,11 @@ namespace AngelPhoneTrack.Controllers
 
         [HttpDelete("{id}")]
         [AngelAuthorized(admin: true)]
-        public async Task<IActionResult> DeleteNoteTemplateAsync(int id)
+        public async Task<IActionResult> DeleteTaskTemplateAsync(int id)
         {
             var nt = await _ctx.Templates.FindAsync(id);
             if (nt == null)
-                return BadRequest(new { error = "Note template doesn't exist." });
+                return BadRequest(new { error = "Task template doesn't exist." });
 
             _ctx.Templates.Remove(nt);
             await _ctx.SaveChangesAsync();

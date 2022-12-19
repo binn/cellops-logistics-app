@@ -12,6 +12,6 @@ namespace AngelPhoneTrack.Data
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<LotAssignment> Assignments { get; set; }
-        public DbSet<NoteTemplate> Templates { get; set; }
+        public DbSet<TaskTemplate> Templates { get; set; }
     }
 }

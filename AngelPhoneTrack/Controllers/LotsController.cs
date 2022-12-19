@@ -175,6 +175,7 @@ namespace AngelPhoneTrack.Controllers
                     x.LotNo,
                     x.Count,
                     x.Timestamp,
+                    x.Tasks,
                     Assignments = x.Assignments.Select(x => new
                     {
                         x.Department.Id,

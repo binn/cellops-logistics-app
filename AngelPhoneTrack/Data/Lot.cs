@@ -24,6 +24,7 @@ namespace AngelPhoneTrack.Data
         public virtual ICollection<Note> Notes { get; set; }
         public virtual ICollection<Audit> Audits { get; set; }
         public virtual ICollection<LotAssignment> Assignments { get; set; }
+        public virtual ICollection<LotTask> Tasks { get; set; }
 
         public Note CreateNote(Employee employee, Department department, string data = "")
         {

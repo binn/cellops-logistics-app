@@ -9,6 +9,7 @@ namespace AngelPhoneTrack.Data
         {
             Assignments = new HashSet<LotAssignment>();
             Timestamp = DateTimeOffset.UtcNow;
+            Tasks = new HashSet<LotTask>();
             Audits = new HashSet<Audit>();
             Notes = new HashSet<Note>();
             LotNo = lotNo;
@@ -51,6 +52,18 @@ namespace AngelPhoneTrack.Data
 
             this.Audits.Add(audit);
             return audit;
+        }
+
+        public LotTask CreateTask(string name, string category)
+        {
+            var task = new LotTask()
+            {
+                Name = name,
+                Category = category
+            };
+
+            this.Tasks.Add(task);
+            return task;
         }
     }
 }

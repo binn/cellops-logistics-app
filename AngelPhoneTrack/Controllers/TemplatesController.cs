@@ -24,13 +24,15 @@ namespace AngelPhoneTrack.Controllers
 
         [HttpPost]
         [AngelAuthorized(admin: true)]
-        public async Task<IActionResult> CreateTaskTemplateAsync([FromBody] [Required(AllowEmptyStrings = false)] [MinLength(3)] string template, [FromBody] string category)
+        public async Task<IActionResult> CreateTaskTemplateAsync([FromBody] [Required(AllowEmptyStrings = false)] [MinLength(3)] string template, [FromQuery] string category)
         {
             if (category != "TESTING" || category != "GRADING")
                 return BadRequest(new { error = "Bad category. Category doesn't exist." });
+
             var nt = new TaskTemplate()
             {
-                Template = template
+                Template = template,
+                Category = category
             };
 
             await _ctx.Templates.AddAsync(nt);

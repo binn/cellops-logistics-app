@@ -1,6 +1,7 @@
 ﻿using AngelPhoneTrack.Data;
 using AngelPhoneTrack.Filters;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AngelPhoneTrack.Controllers
 {
@@ -14,6 +15,34 @@ namespace AngelPhoneTrack.Controllers
         public NotesController(AngelContext ctx)
         {
             _ctx = ctx;
+        }
+
+        [HttpGet("/_migrations/seed")]
+        public async Task<IActionResult> SeedTasksAsync()
+        {
+            var lots = await _ctx.Lots.ToListAsync();
+            var templates = await _ctx.Templates.ToListAsync();
+
+            foreach (var lot in lots)
+                foreach (var template in templates)
+                    lot.CreateTask(template.Template, template.Category);
+
+            await _ctx.SaveChangesAsync();
+            return Ok("Done");
+        }
+
+        [HttpPost("tasks/{taskId}/complete")]
+        public async Task<IActionResult> ChangeTaskCompletedStatusAsync(Guid taskId, [FromQuery] bool completed)
+        {
+            var task = await _ctx.Tasks.FindAsync(taskId);
+            if (task == null)
+                return BadRequest(new { error = "Task doesn't exist." });
+
+            task.Completed = completed;
+            task.Lot.CreateAudit(Employee!, Employee!.Department, completed ? "TASK_COMPLETED" : "TASK_UNCOMPLETED");
+
+            await _ctx.SaveChangesAsync();
+            return Ok();
         }
 
         [HttpPost("lots/{lotId}")]

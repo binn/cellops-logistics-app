@@ -68,8 +68,12 @@ namespace AngelPhoneTrack.Controllers
             if (assignedDepartment == null)
                 return BadRequest(new { error = "Department doesn't exist." });
 
-            var departments = await _ctx.Departments.Where(x => x.IsAssignable).ToListAsync();
             var lot = new Lot(request.LotNo, request.Count);
+            var taskTemplates = await _ctx.Templates.ToListAsync();
+            var departments = await _ctx.Departments.Where(x => x.IsAssignable).ToListAsync();
+
+            foreach (var task in taskTemplates)
+                lot.CreateTask(task.Template, task.Category);
 
             foreach (var department in departments)
             {

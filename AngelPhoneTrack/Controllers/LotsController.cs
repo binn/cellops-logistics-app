@@ -185,7 +185,7 @@ namespace AngelPhoneTrack.Controllers
                         x.Department.Id,
                         x.Count
                     }),
-                    Notes = x.Notes.Select(x => new
+                    Notes = x.Notes.OrderByDescending(x => x.Timestamp).Select(x => new
                     {
                         x.Id,
                         Department = x.Department.Id,
@@ -193,7 +193,7 @@ namespace AngelPhoneTrack.Controllers
                         x.Data,
                         x.Timestamp
                     }),
-                    Audits = x.Audits.Select(x => new
+                    Audits = x.Audits.OrderByDescending(x => x.Timestamp).Select(x => new
                     {
                         x.Id,
                         x.CreatedBy,

@@ -26,7 +26,7 @@ namespace AngelPhoneTrack.Controllers
         [AngelAuthorized(admin: true)]
         public async Task<IActionResult> CreateTaskTemplateAsync([FromBody] [Required(AllowEmptyStrings = false)] [MinLength(3)] string template, [FromQuery] string category)
         {
-            if (category != "TESTING" || category != "GRADING")
+            if (category != "TESTING" && category != "GRADING")
                 return BadRequest(new { error = "Bad category. Category doesn't exist." });
 
             var nt = new TaskTemplate()

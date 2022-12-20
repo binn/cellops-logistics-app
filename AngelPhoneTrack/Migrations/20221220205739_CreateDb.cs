@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AngelPhoneTrack.Migrations
 {
     /// <inheritdoc />
-    public partial class FirstCreate : Migration
+    public partial class CreateDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -47,7 +47,8 @@ namespace AngelPhoneTrack.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Template = table.Column<string>(type: "text", nullable: false)
+                    Template = table.Column<string>(type: "text", nullable: false),
+                    Category = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -62,9 +63,9 @@ namespace AngelPhoneTrack.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Pin = table.Column<string>(type: "text", nullable: false),
-                    IsAdmin = table.Column<bool>(type: "boolean", nullable: false),
+                    Admin = table.Column<bool>(type: "boolean", nullable: false),
                     Token = table.Column<string>(type: "text", nullable: false),
-                    IsSupervisor = table.Column<bool>(type: "boolean", nullable: false),
+                    Supervisor = table.Column<bool>(type: "boolean", nullable: false),
                     DepartmentId = table.Column<int>(type: "integer", nullable: false),
                     Timestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
@@ -163,6 +164,27 @@ namespace AngelPhoneTrack.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Tasks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Category = table.Column<string>(type: "text", nullable: false),
+                    Completed = table.Column<bool>(type: "boolean", nullable: false),
+                    LotId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tasks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Tasks_Lots_LotId",
+                        column: x => x.LotId,
+                        principalTable: "Lots",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Assignments_DepartmentId",
                 table: "Assignments",
@@ -202,6 +224,11 @@ namespace AngelPhoneTrack.Migrations
                 name: "IX_Notes_LotId",
                 table: "Notes",
                 column: "LotId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_LotId",
+                table: "Tasks",
+                column: "LotId");
         }
 
         /// <inheritdoc />
@@ -218,6 +245,9 @@ namespace AngelPhoneTrack.Migrations
 
             migrationBuilder.DropTable(
                 name: "Notes");
+
+            migrationBuilder.DropTable(
+                name: "Tasks");
 
             migrationBuilder.DropTable(
                 name: "Templates");

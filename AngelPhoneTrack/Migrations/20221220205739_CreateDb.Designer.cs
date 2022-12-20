@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AngelPhoneTrack.Migrations
 {
     [DbContext(typeof(AngelContext))]
-    [Migration("20221219184347_UpdateTaskTemplates")]
-    partial class UpdateTaskTemplates
+    [Migration("20221220205739_CreateDb")]
+    partial class CreateDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

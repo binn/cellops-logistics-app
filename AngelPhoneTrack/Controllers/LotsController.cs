@@ -41,7 +41,7 @@ namespace AngelPhoneTrack.Controllers
                 });
 
             if(!string.IsNullOrWhiteSpace(lotNo))
-                query = query.Where(x => x.LotNo == lotNo);
+                query = query.Where(x => x.LotNo.Contains(lotNo)); // updated this logic cuz why not
 
             var results = await query.ToPagedListAsync(page, 25);
 
@@ -209,6 +209,20 @@ namespace AngelPhoneTrack.Controllers
                 return BadRequest(new { error = "Lot doesn't exist." });
 
             return Ok(lot);
+        }
+
+        [HttpDelete("{id}")]
+        [AngelAuthorized(supervisor: true)]
+        public async Task<IActionResult> DeleteLotAsync(Guid id)
+        {
+            var lot = await _ctx.Lots.FirstOrDefaultAsync(x => x.Id == id);
+            if (lot == null)
+                return BadRequest(new { error = "Lot doesn't exist. " });
+
+            _ctx.Lots.Remove(lot);
+            await _ctx.SaveChangesAsync();
+
+            return Ok(new { success = true });
         }
 
         public record LotAssignmentRequest(int Count, int Id);

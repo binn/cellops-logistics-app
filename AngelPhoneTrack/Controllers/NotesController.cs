@@ -2,6 +2,7 @@
 using AngelPhoneTrack.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace AngelPhoneTrack.Controllers
 {
@@ -65,9 +66,13 @@ namespace AngelPhoneTrack.Controllers
         [AngelAuthorized(supervisor: true)]
         public async Task<IActionResult> DeleteNoteAsync(Guid noteId)
         {
-            var note = await _ctx.Notes.FindAsync(noteId);
+            var note = await _ctx.Notes.Include(x => x.Lot).FirstOrDefaultAsync(x => x.Id == noteId);
             if (note == null)
                 return BadRequest(new { error = "Note doesn't exist." });
+
+            var data = new { note.Data, note.CreatedBy, note.Timestamp };
+            note.Lot.CreateAudit(Employee!, Employee!.Department, "NOTE_DELETED", JsonSerializer.Serialize(data, new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+            //await _ctx.SaveChangesAsync(); 
 
             _ctx.Notes.Remove(note);
             await _ctx.SaveChangesAsync();

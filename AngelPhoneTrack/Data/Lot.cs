@@ -21,6 +21,8 @@ namespace AngelPhoneTrack.Data
 
         public DateTimeOffset Timestamp { get; set; }
         public string LotNo { get; set; } = default!; // another key to search by
+        public string Grade { get; set; } = default!;
+        public string? Model { get; set; }
 
         public virtual ICollection<Note> Notes { get; set; }
         public virtual ICollection<Audit> Audits { get; set; }

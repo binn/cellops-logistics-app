@@ -1,6 +1,7 @@
 ﻿using AngelPhoneTrack.Data;
 using AngelPhoneTrack.Filters;
 using AngelPhoneTrack.Services;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -32,6 +33,8 @@ namespace AngelPhoneTrack.Controllers
                     lot.Id,
                     lot.LotNo,
                     lot.Count,
+                    lot.Model,
+                    lot.Grade,
                     lot.Timestamp,
                     Assignments = lot.Assignments.Select(x => new
                     {
@@ -69,8 +72,25 @@ namespace AngelPhoneTrack.Controllers
                 return BadRequest(new { error = "Department doesn't exist." });
 
             var lot = new Lot(request.LotNo, request.Count);
-            var taskTemplates = await _ctx.Templates.ToListAsync();
+            var tasks = request.Tasks.Where(x => x > 0).ToList();
+            var taskTemplates = await _ctx.Templates.Where(x => tasks.Contains(x.Id)).ToListAsync();
             var departments = await _ctx.Departments.Where(x => x.IsAssignable).ToListAsync();
+            lot.Model = request.Model;
+
+            if(request.Grade != "NEW" || request.Grade != "CPO" || request.Grade != "UNKNOWN")
+            {
+                if (request.Grade.Length > 2)
+                    return BadRequest(new { error = "Invalid grade!" });
+
+                char[] grades = { 'A', 'B', 'C', 'D' };
+                if (!grades.Contains(request.Grade[0]))
+                    return BadRequest(new { error = "Invalid grade!" });
+
+                if ((request.Grade[1] != '+' || request.Grade[1] != '-') && request.Grade[0] != 'D')
+                    return BadRequest(new { error = "Invalid grade!" });
+            }
+
+            lot.Grade = request.Grade;
 
             foreach (var task in taskTemplates)
                 lot.CreateTask(task.Template, task.Category);
@@ -96,6 +116,8 @@ namespace AngelPhoneTrack.Controllers
                 lot.Id,
                 lot.LotNo,
                 lot.Count,
+                lot.Model,
+                lot.Grade,
                 lot.Timestamp,
                 Assignments = lot.Assignments.Select(x => new
                 {
@@ -144,6 +166,8 @@ namespace AngelPhoneTrack.Controllers
                 lot.Id,
                 lot.LotNo,
                 lot.Count,
+                lot.Model,
+                lot.Grade,
                 lot.Timestamp,
                 Assignments = lot.Assignments.Select(x => new
                 {
@@ -178,6 +202,8 @@ namespace AngelPhoneTrack.Controllers
                     x.Id,
                     x.LotNo,
                     x.Count,
+                    x.Model,
+                    x.Grade,
                     x.Timestamp,
                     x.Tasks,
                     Assignments = x.Assignments.Select(x => new
@@ -226,6 +252,6 @@ namespace AngelPhoneTrack.Controllers
         }
 
         public record LotAssignmentRequest(int Count, int Id);
-        public record CreateLotRequest(string LotNo, int Count, int Department);
+        public record CreateLotRequest(string LotNo, int Count, int Department, int[] Tasks, string Model, string Grade);
     }
 }

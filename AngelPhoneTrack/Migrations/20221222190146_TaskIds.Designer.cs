@@ -3,6 +3,7 @@ using System;
 using AngelPhoneTrack.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AngelPhoneTrack.Migrations
 {
     [DbContext(typeof(AngelContext))]
-    partial class AngelContextModelSnapshot : ModelSnapshot
+    [Migration("20221222190146_TaskIds")]
+    partial class TaskIds
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -130,9 +133,6 @@ namespace AngelPhoneTrack.Migrations
                     b.Property<bool>("Archived")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset?>("ArchivedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<int>("Count")
                         .HasColumnType("integer");
 
@@ -197,9 +197,6 @@ namespace AngelPhoneTrack.Migrations
                     b.Property<bool>("Completed")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<Guid>("LotId")
                         .HasColumnType("uuid");
 
@@ -209,9 +206,6 @@ namespace AngelPhoneTrack.Migrations
 
                     b.Property<int?>("TemplateId")
                         .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 

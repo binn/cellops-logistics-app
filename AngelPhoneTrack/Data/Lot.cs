@@ -23,6 +23,8 @@ namespace AngelPhoneTrack.Data
         public string LotNo { get; set; } = default!; // another key to search by
         public string Grade { get; set; } = default!;
         public string? Model { get; set; }
+        public bool Archived { get; set; }
+        public DateTimeOffset? ArchivedAt { get; set; }
 
         public virtual ICollection<Note> Notes { get; set; }
         public virtual ICollection<Audit> Audits { get; set; }
@@ -56,12 +58,13 @@ namespace AngelPhoneTrack.Data
             return audit;
         }
 
-        public LotTask CreateTask(string name, string category)
+        public LotTask CreateTask(string name, string category, int? templateId)
         {
             var task = new LotTask()
             {
                 Name = name,
-                Category = category
+                Category = category,
+                TemplateId = templateId
             };
 
             this.Tasks.Add(task);

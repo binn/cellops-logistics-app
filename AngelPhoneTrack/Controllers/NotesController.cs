@@ -26,10 +26,26 @@ namespace AngelPhoneTrack.Controllers
 
             foreach (var lot in lots)
                 foreach (var template in templates)
-                    lot.CreateTask(template.Template, template.Category);
+                    lot.CreateTask(template.Template, template.Category, template.Id);
 
             await _ctx.SaveChangesAsync();
             return Ok("Done");
+        }
+
+        [HttpPost("/lots/{lotId}/tasks")]
+        public async Task<IActionResult> UpdateLotTasksAsync(Guid lotId, [FromBody] int[] tasks)
+        {
+            var lot = await _ctx.Lots.FirstOrDefaultAsync(a => a.Id == lotId);
+            if (lot == null)
+                return BadRequest(new { error = "Lot doesn't exist!" });
+
+            var taskIds = tasks.Where(x => x > 0);
+            var templates = await _ctx.Templates.Where(x => taskIds.Contains(x.Id)).ToListAsync();
+            foreach (var template in templates)
+                lot.CreateTask(template.Template, template.Category, template.Id);
+
+            await _ctx.SaveChangesAsync();
+            return Ok(new { success = true });
         }
 
         [HttpPost("/tasks/{taskId}/complete")]
@@ -42,7 +58,10 @@ namespace AngelPhoneTrack.Controllers
             task.Completed = completed;
             task.Lot.CreateAudit(Employee!, Employee!.Department, completed ? "TASK_COMPLETED" : "TASK_UNCOMPLETED", "Task \"" + task.Name + "\" updated.");
 
-            await _ctx.SaveChangesAsync();
+            if (task.Completed)
+                task.CompletedAt = DateTimeOffset.UtcNow;
+
+                await _ctx.SaveChangesAsync();
             return Ok();
         }
 

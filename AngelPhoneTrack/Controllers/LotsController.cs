@@ -28,6 +28,7 @@ namespace AngelPhoneTrack.Controllers
             page = page < 1 ? 1 : page;
             var query = _ctx.Lots
                 .OrderByDescending(x => x.Audits.OrderByDescending(x => x.Timestamp).FirstOrDefault()!.Timestamp) // at least one audit should exist for lot creation
+                .Where(x => !x.Archived)
                 .Select(lot => new
                 {
                     lot.Id,
@@ -44,7 +45,7 @@ namespace AngelPhoneTrack.Controllers
                 });
 
             if(!string.IsNullOrWhiteSpace(lotNo))
-                query = query.Where(x => x.LotNo.Contains(lotNo)); // updated this logic cuz why not
+                query = query.Where(x => x.LotNo.Contains(lotNo.ToUpper())); // updated this logic cuz why not
 
             var results = await query.ToPagedListAsync(page, 25);
 
@@ -77,7 +78,7 @@ namespace AngelPhoneTrack.Controllers
             var departments = await _ctx.Departments.Where(x => x.IsAssignable).ToListAsync();
             lot.Model = request.Model;
 
-            if(request.Grade != "NEW" || request.Grade != "CPO" || request.Grade != "UNKNOWN")
+            if(request.Grade != "NEW" && request.Grade != "CPO" && request.Grade != "UNKNOWN")
             {
                 if (request.Grade.Length > 2)
                     return BadRequest(new { error = "Invalid grade!" });
@@ -86,14 +87,17 @@ namespace AngelPhoneTrack.Controllers
                 if (!grades.Contains(request.Grade[0]))
                     return BadRequest(new { error = "Invalid grade!" });
 
-                if ((request.Grade[1] != '+' || request.Grade[1] != '-') && request.Grade[0] != 'D')
-                    return BadRequest(new { error = "Invalid grade!" });
+                if (request.Grade.Length == 2)
+                {
+                    if ((request.Grade[1] != '+' && request.Grade[1] != '-') && request.Grade[0] != 'D')
+                        return BadRequest(new { error = "Invalid grade!" });
+                }
             }
 
             lot.Grade = request.Grade;
 
             foreach (var task in taskTemplates)
-                lot.CreateTask(task.Template, task.Category);
+                lot.CreateTask(task.Template, task.Category, task.Id);
 
             foreach (var department in departments)
             {
@@ -125,6 +129,42 @@ namespace AngelPhoneTrack.Controllers
                     x.Count
                 })
             });
+        }
+
+        [HttpPost("{id}/archive")]
+        [AngelAuthorized(supervisor: true)]
+        public async Task<IActionResult> ArchiveLotAsync(Guid id)
+        {
+            var lot = await _ctx.Lots.Include(x => x.Tasks).FirstOrDefaultAsync(x => x.Id == id);
+            if (lot == null)
+                return BadRequest(new { error = "Lot doesn't exist." });
+
+            if (!lot.Tasks.All(x => x.Completed))
+                return BadRequest(new { error = "All tasks must be completed before archival" });
+
+            lot.Archived = true;
+            lot.ArchivedAt = DateTimeOffset.UtcNow;
+
+            await _ctx.SaveChangesAsync();
+            return Ok(new { success = true });
+        }
+
+        [HttpPost("{id}/unarchive")]
+        [AngelAuthorized(supervisor: true)]
+        public async Task<IActionResult> UnarchiveLotAsync(Guid id)
+        {
+            var lot = await _ctx.Lots.Include(x => x.Tasks).FirstOrDefaultAsync(x => x.Id == id);
+            if (lot == null)
+                return BadRequest(new { error = "Lot doesn't exist." });
+
+            if (!lot.Archived)
+                return BadRequest(new { error = "Lot is not archived." });
+
+            lot.Archived = false;
+            lot.ArchivedAt = null;
+
+            await _ctx.SaveChangesAsync();
+            return Ok(new { success = true });
         }
 
         [HttpPost("{id}/assignments")]

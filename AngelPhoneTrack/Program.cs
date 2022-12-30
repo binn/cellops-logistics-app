@@ -14,6 +14,7 @@ namespace AngelPhoneTrack
             builder.Services.AddControllers();
             builder.Services.AddDbContext<AngelContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("MAIN")));
 
+            builder.Services.AddCors();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Host.UseSerilog((context, services, configuration) => configuration
@@ -30,7 +31,8 @@ namespace AngelPhoneTrack
             app.UseSwagger(); // originally behind dev environments only
             app.UseSwaggerUI();
 
-           // app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
+            app.UseCors(builder => builder.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
             app.UseAuthorization();
             app.MapControllers();
 

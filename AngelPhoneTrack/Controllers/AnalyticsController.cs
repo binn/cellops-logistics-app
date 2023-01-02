@@ -14,8 +14,8 @@ namespace AngelPhoneTrack.Controllers
         private readonly AngelContext _ctx;
         
         public AnalyticsController(AngelContext ctx) => _ctx = ctx;
-
-        [Route("lots-weekly")]
+       
+        [HttpGet("lots-weekly")]
         public async Task<IActionResult> GetTurnoverTimeForLotsAsync()
         {
             var week = DateTimeOffset.UtcNow.AddDays(-7);

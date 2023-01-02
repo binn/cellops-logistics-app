@@ -7,10 +7,7 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
-COPY ["AngelPhoneTrack/AngelPhoneTrack.csproj", "AngelPhoneTrack/"]
-RUN dotnet restore "AngelPhoneTrack/AngelPhoneTrack.csproj"
 COPY . .
-WORKDIR "/src/AngelPhoneTrack"
 RUN dotnet build "AngelPhoneTrack.csproj" -c Release -o /app/build
 
 FROM build AS publish

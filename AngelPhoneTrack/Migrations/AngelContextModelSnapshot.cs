@@ -55,7 +55,7 @@ namespace AngelPhoneTrack.Migrations
 
                     b.HasIndex("LotId");
 
-                    b.ToTable("Audits");
+                    b.ToTable("Audits", (string)null);
                 });
 
             modelBuilder.Entity("AngelPhoneTrack.Data.Department", b =>
@@ -79,7 +79,7 @@ namespace AngelPhoneTrack.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Departments");
+                    b.ToTable("Departments", (string)null);
                 });
 
             modelBuilder.Entity("AngelPhoneTrack.Data.Employee", b =>
@@ -118,7 +118,7 @@ namespace AngelPhoneTrack.Migrations
 
                     b.HasIndex("DepartmentId");
 
-                    b.ToTable("Employees");
+                    b.ToTable("Employees", (string)null);
                 });
 
             modelBuilder.Entity("AngelPhoneTrack.Data.Lot", b =>
@@ -154,7 +154,7 @@ namespace AngelPhoneTrack.Migrations
 
                     b.HasIndex("LotNo");
 
-                    b.ToTable("Lots");
+                    b.ToTable("Lots", (string)null);
                 });
 
             modelBuilder.Entity("AngelPhoneTrack.Data.LotAssignment", b =>
@@ -181,7 +181,7 @@ namespace AngelPhoneTrack.Migrations
 
                     b.HasIndex("LotId");
 
-                    b.ToTable("Assignments");
+                    b.ToTable("Assignments", (string)null);
                 });
 
             modelBuilder.Entity("AngelPhoneTrack.Data.LotTask", b =>
@@ -217,7 +217,7 @@ namespace AngelPhoneTrack.Migrations
 
                     b.HasIndex("LotId");
 
-                    b.ToTable("Tasks");
+                    b.ToTable("Tasks", (string)null);
                 });
 
             modelBuilder.Entity("AngelPhoneTrack.Data.Note", b =>
@@ -249,7 +249,7 @@ namespace AngelPhoneTrack.Migrations
 
                     b.HasIndex("LotId");
 
-                    b.ToTable("Notes");
+                    b.ToTable("Notes", (string)null);
                 });
 
             modelBuilder.Entity("AngelPhoneTrack.Data.TaskTemplate", b =>
@@ -270,7 +270,7 @@ namespace AngelPhoneTrack.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Templates");
+                    b.ToTable("Templates", (string)null);
                 });
 
             modelBuilder.Entity("AngelPhoneTrack.Data.Audit", b =>

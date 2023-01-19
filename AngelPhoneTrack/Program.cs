@@ -57,7 +57,7 @@ namespace AngelPhoneTrack
 
             logger.LogInformation("Validating database seed...");
             Department? hr = await ctx.Departments.FirstOrDefaultAsync(d => d.Name == "HR");
-            Employee? superuser = await ctx.Employees.FirstOrDefaultAsync(x => x.Name == "Superuser");
+            Employee? superuser = await ctx.Employees.FirstOrDefaultAsync(x => x.FirstName == "Superuser");
 
             if (hr == null)
             {

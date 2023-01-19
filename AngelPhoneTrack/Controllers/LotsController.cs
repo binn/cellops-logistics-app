@@ -20,15 +20,13 @@ namespace AngelPhoneTrack.Controllers
             _ctx = ctx;
         }
 
-        // todo: change table style on appsmith, and implement tasking (change note templates to TaskTemplates or something and figure it out form there)
-
         [HttpGet]
-        public async Task<IActionResult> GetLotsAsync([FromQuery] int page = 1, [FromQuery] string? lotNo = null)
+        public async Task<IActionResult> GetLotsAsync([FromQuery] int page = 1, [FromQuery] string? lotNo = null, [FromQuery] bool archived = false)
         {
             page = page < 1 ? 1 : page;
             var query = _ctx.Lots
                 .OrderByDescending(x => x.Audits.OrderByDescending(x => x.Timestamp).FirstOrDefault()!.Timestamp) // at least one audit should exist for lot creation
-                .Where(x => !x.Archived)
+                .Where(x => x.Archived == archived)
                 .Select(lot => new
                 {
                     lot.Id,
@@ -37,6 +35,8 @@ namespace AngelPhoneTrack.Controllers
                     lot.Model,
                     lot.Grade,
                     lot.Timestamp,
+                    lot.Archived,
+                    lot.ArchivedAt,
                     Assignments = lot.Assignments.Select(x => new
                     {
                         x.Department.Id,
@@ -62,7 +62,7 @@ namespace AngelPhoneTrack.Controllers
         public async Task<IActionResult> CreateLotAsync([FromBody] CreateLotRequest request)
         {
             if (request.Count < 1)
-                return BadRequest(new { error = "Needs at least one phone." });
+                return BadRequest(new { error = "Lot requires at least one item." });
 
             bool existsAlready = await _ctx.Lots.AnyAsync(x => x.LotNo == request.LotNo);
             if (existsAlready)
@@ -141,6 +141,9 @@ namespace AngelPhoneTrack.Controllers
 
             if (!lot.Tasks.All(x => x.Completed))
                 return BadRequest(new { error = "All tasks must be completed before archival" });
+
+            if (lot.Archived)
+                return BadRequest(new { error = "Lot is already archived" });
 
             lot.Archived = true;
             lot.ArchivedAt = DateTimeOffset.UtcNow;
@@ -246,6 +249,8 @@ namespace AngelPhoneTrack.Controllers
                     x.Grade,
                     x.Timestamp,
                     x.Tasks,
+                    x.Archived,
+                    x.ArchivedAt,
                     Assignments = x.Assignments.Select(x => new
                     {
                         x.Department.Id,

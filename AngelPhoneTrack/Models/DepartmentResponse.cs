@@ -12,6 +12,7 @@ namespace AngelPhoneTrack.Models
 
         public int Id { get; set; }
         public string Name { get; set; }
+        public bool Default { get; set; }
     }
 
     public class DepartmentResponseWithDescription : DepartmentResponse

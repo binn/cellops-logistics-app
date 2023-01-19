@@ -3,6 +3,7 @@ using AngelPhoneTrack.Filters;
 using AngelPhoneTrack.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace AngelPhoneTrack.Controllers
 {
@@ -52,7 +53,8 @@ namespace AngelPhoneTrack.Controllers
 
             var employee = new Employee()
             {
-                Name = request.Name,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
                 Supervisor = request.Supervisor,
                 Admin = request.Admin,
                 Pin = request.Pin,
@@ -96,9 +98,10 @@ namespace AngelPhoneTrack.Controllers
 
             employee.Supervisor = incoming.Supervisor;
             employee.Admin = incoming.Admin;
-            employee.Name = incoming.Name;
-            
-            if(incoming.Department != employee.Department.Id)
+            employee.FirstName = incoming.FirstName;
+            employee.LastName = incoming.LastName;
+
+            if (incoming.Department != employee.Department.Id)
             {
                 Department? department = await _ctx.Departments.FindAsync(incoming.Department);
                 if (department == null)
@@ -117,7 +120,7 @@ namespace AngelPhoneTrack.Controllers
             return Ok(new EmployeeResponse(employee));
         }
 
-        public record EmployeeCreateRequest(string Name, bool Admin, bool Supervisor, string Pin, int Department);
+        public record EmployeeCreateRequest(string FirstName, string LastName, bool Admin, bool Supervisor, string Pin, int Department);
 
         [HttpGet("departments")]
         public async Task<IActionResult> GetAllDepartments()
@@ -150,6 +153,7 @@ namespace AngelPhoneTrack.Controllers
             {
                 Name = request.Name,
                 Description = request.Description,
+                Default = request.Default,
                 IsAssignable = true
             };
 
@@ -169,12 +173,34 @@ namespace AngelPhoneTrack.Controllers
             if (department.Name == "HR")
                 return BadRequest(new { error = "Cannot delete HR department." });
 
+            var lots = await _ctx.Lots
+                .Include(x => x.Assignments)
+                .ThenInclude(x => x.Department)
+                .Where(x => x.Assignments.Any(d => d.Department.Id == department.Id && d.Count > 0)).ToListAsync();
+
+            foreach(var lot in lots)
+            {
+                var oldAssignments = lot.Assignments.Select(x => new { x.Department.Id, x.Count });
+
+                var defaultDepartment = lot.Assignments.First(x => x.Department.Default);
+                var match = lot.Assignments.First(x => x.Department.Id == department.Id);
+                defaultDepartment.Count += match.Count;
+                lot.Assignments.Remove(match);
+
+                lot.CreateAudit(Employee!, Employee!.Department, "LOT_DEPARTMENT_DELETED",
+                    JsonSerializer.Serialize(new
+                    {
+                        old = oldAssignments,
+                        updated = lot.Assignments.Select(x => new { x.Department.Id, x.Count })
+                    }, new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+            }
+
             _ctx.Departments.Remove(department); // implement code for moving existing employees to another department
             await _ctx.SaveChangesAsync();
 
             return Ok(new { success = true });
         }
 
-        public record CreateDepartmentRequest(string Name, string Description);
+        public record CreateDepartmentRequest(string Name, string Description, bool Default = false);
     }
 }

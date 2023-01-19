@@ -1,5 +1,6 @@
 using AngelPhoneTrack.Data;
 using AngelPhoneTrack.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -24,6 +25,12 @@ namespace AngelPhoneTrack
                     .Enrich.WithProperty("Application", new { context.HostingEnvironment.ApplicationName, context.HostingEnvironment.EnvironmentName }, true)
                     .Destructure.With<JsonDocumentDestructuringPolicy>()
                     .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {SourceContext} {Level:u3}] {Message:lj}{NewLine}{Exception}"));
+
+            builder.Services.Configure<ApiBehaviorOptions>(o =>
+            {
+                o.InvalidModelStateResponseFactory = (ctx) =>
+                    new BadRequestObjectResult(new { error = ctx.ModelState.SelectMany(x => x.Value?.Errors?.SelectMany(e => e?.ErrorMessage)) });
+            });
 
             var app = builder.Build();
             await MigrateAndSeedDatabaseAsync(app);
@@ -73,7 +80,8 @@ namespace AngelPhoneTrack
                 superuser = new Employee()
                 {
                     Admin = true,
-                    Name = "Superuser",
+                    FirstName = "Superuser",
+                    LastName = "",
                     Supervisor = true,
                     Pin = app.Configuration["SuperuserPin"]!,
                     Token = Guid.NewGuid().ToString()

@@ -24,8 +24,8 @@ namespace AngelPhoneTrack.Controllers
             employee.Token = Guid.NewGuid().ToString("N");
             await _ctx.SaveChangesAsync();
 
-            var resp = new EmployeeResponse(employee);
-            resp.Pin = "****";
+            var resp = new EmployeeResponse(employee)
+            { Pin = "****" };
 
             return Ok(new { success = true, token = employee.Token, employee = resp });
         }

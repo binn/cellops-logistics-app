@@ -20,33 +20,17 @@ namespace AngelPhoneTrack.Services
 
         private static LogEventPropertyValue Destructure(in JsonElement jel)
         {
-            switch (jel.ValueKind)
+            return jel.ValueKind switch
             {
-                case JsonValueKind.Array:
-                    return new SequenceValue(jel.EnumerateArray().Select(ae => Destructure(in ae)));
-
-                case JsonValueKind.False:
-                    return new ScalarValue(false);
-
-                case JsonValueKind.True:
-                    return new ScalarValue(true);
-
-                case JsonValueKind.Null:
-                case JsonValueKind.Undefined:
-                    return new ScalarValue(null);
-
-                case JsonValueKind.Number:
-                    return new ScalarValue(jel.GetDecimal());
-
-                case JsonValueKind.String:
-                    return new ScalarValue(jel.GetString());
-
-                case JsonValueKind.Object:
-                    return new StructureValue(jel.EnumerateObject().Select(jp => new LogEventProperty(jp.Name, Destructure(jp.Value))));
-
-                default:
-                    throw new ArgumentException("Unrecognized value kind " + jel.ValueKind + ".");
-            }
+                JsonValueKind.Array => new SequenceValue(jel.EnumerateArray().Select(ae => Destructure(in ae))),
+                JsonValueKind.False => new ScalarValue(false),
+                JsonValueKind.True => new ScalarValue(true),
+                JsonValueKind.Null or JsonValueKind.Undefined => new ScalarValue(null),
+                JsonValueKind.Number => new ScalarValue(jel.GetDecimal()),
+                JsonValueKind.String => new ScalarValue(jel.GetString()),
+                JsonValueKind.Object => new StructureValue(jel.EnumerateObject().Select(jp => new LogEventProperty(jp.Name, Destructure(jp.Value)))),
+                _ => throw new ArgumentException("Unrecognized value kind " + jel.ValueKind + "."),
+            };
         }
     }
 }

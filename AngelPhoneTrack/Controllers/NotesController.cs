@@ -11,25 +11,11 @@ namespace AngelPhoneTrack.Controllers
     [AngelAuthorized]
     public class NotesController : AngelControllerBase
     {
-        private AngelContext _ctx;
+        private readonly AngelContext _ctx;
 
         public NotesController(AngelContext ctx)
         {
             _ctx = ctx;
-        }
-
-        [HttpGet("/_migrations/seed")]
-        public async Task<IActionResult> SeedTasksAsync()
-        {
-            var lots = await _ctx.Lots.ToListAsync();
-            var templates = await _ctx.Templates.ToListAsync();
-
-            foreach (var lot in lots)
-                foreach (var template in templates)
-                    lot.CreateTask(template.Template, template.Category, template.Id);
-
-            await _ctx.SaveChangesAsync();
-            return Ok("Done");
         }
 
         [HttpPost("/lots/{lotId}/tasks")]
@@ -56,12 +42,12 @@ namespace AngelPhoneTrack.Controllers
                 return BadRequest(new { error = "Task doesn't exist." });
 
             task.Completed = completed;
-            task.Lot.CreateAudit(Employee!, Employee!.Department, completed ? "TASK_COMPLETED" : "TASK_UNCOMPLETED", "Task \"" + task.Name + "\" updated.");
+            task.Lot.CreateAudit(Employee!, Employee!.Department, completed ? "TASK_COMPLETED" : "TASK_UNCOMPLETED", "Task \"" + task.Name + "\" has been marked as \"" + (completed ? "completed" : "incomplete") + "\".");
 
             if (task.Completed)
                 task.CompletedAt = DateTimeOffset.UtcNow;
 
-                await _ctx.SaveChangesAsync();
+            await _ctx.SaveChangesAsync();
             return Ok();
         }
 

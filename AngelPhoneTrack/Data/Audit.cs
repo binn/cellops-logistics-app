@@ -3,7 +3,7 @@
     public class Audit
     {
         public Guid Id { get; set; }
-        public Lot Lot { get; set; } = default!;
+        public Lot Lot { get; set; } = default!; //possibly make this null for global audits
         public string Type { get; set; } = default!;
         public string Data { get; set; } = default!;
         public string CreatedBy {  get; set; } = default!;

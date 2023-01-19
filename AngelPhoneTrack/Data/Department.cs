@@ -12,6 +12,7 @@
         public string Name { get; set; } = default!;
         public string Description { get; set; } = default!;
         public bool IsAssignable { get; set; } = false; // default to be non-assignable departments
+        public bool Default { get; set; } = false;
 
         public virtual ICollection<Employee> Employees { get; set; }
         public virtual ICollection<LotAssignment> Assignments { get; set; }

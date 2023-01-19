@@ -22,7 +22,7 @@ namespace AngelPhoneTrack.Controllers
             var lots = await _ctx.Lots.Where(x => x.Timestamp > week).ToListAsync();
 
             var timeAverage = lots.Where(x => x.Archived).Select(x =>  x.ArchivedAt!.Value - x.Timestamp);
-            return Ok(new { total = lots.Count(), incomplete = lots.Count(x => !x.Archived), averageSeconds = timeAverage.Average(e => e.TotalSeconds) });
+            return Ok(new { total = lots.Count, incomplete = lots.Count(x => !x.Archived), averageSeconds = timeAverage.Average(e => e.TotalSeconds) });
         }
     }
 }

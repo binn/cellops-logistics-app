@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AngelPhoneTrack.Migrations
 {
     [DbContext(typeof(AngelContext))]
-    [Migration("20221222190146_TaskIds")]
-    partial class TaskIds
+    [Migration("20230120222412_InitialCreateDeploy")]
+    partial class InitialCreateDeploy
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -69,6 +69,9 @@ namespace AngelPhoneTrack.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Default")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -99,7 +102,11 @@ namespace AngelPhoneTrack.Migrations
                     b.Property<int>("DepartmentId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -133,8 +140,14 @@ namespace AngelPhoneTrack.Migrations
                     b.Property<bool>("Archived")
                         .HasColumnType("boolean");
 
+                    b.Property<DateTimeOffset?>("ArchivedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("Count")
                         .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("Expiration")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Grade")
                         .IsRequired()
@@ -146,6 +159,9 @@ namespace AngelPhoneTrack.Migrations
 
                     b.Property<string>("Model")
                         .HasColumnType("text");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
@@ -197,6 +213,9 @@ namespace AngelPhoneTrack.Migrations
                     b.Property<bool>("Completed")
                         .HasColumnType("boolean");
 
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid>("LotId")
                         .HasColumnType("uuid");
 
@@ -206,6 +225,9 @@ namespace AngelPhoneTrack.Migrations
 
                     b.Property<int?>("TemplateId")
                         .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 

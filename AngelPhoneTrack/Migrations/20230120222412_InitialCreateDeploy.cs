@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AngelPhoneTrack.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateDb : Migration
+    public partial class InitialCreateDeploy : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,7 +20,8 @@ namespace AngelPhoneTrack.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
-                    IsAssignable = table.Column<bool>(type: "boolean", nullable: false)
+                    IsAssignable = table.Column<bool>(type: "boolean", nullable: false),
+                    Default = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -34,7 +35,13 @@ namespace AngelPhoneTrack.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Count = table.Column<int>(type: "integer", nullable: false),
                     Timestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    LotNo = table.Column<string>(type: "text", nullable: false)
+                    LotNo = table.Column<string>(type: "text", nullable: false),
+                    Grade = table.Column<string>(type: "text", nullable: false),
+                    Model = table.Column<string>(type: "text", nullable: true),
+                    Archived = table.Column<bool>(type: "boolean", nullable: false),
+                    ArchivedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Priority = table.Column<int>(type: "integer", nullable: false),
+                    Expiration = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -61,7 +68,8 @@ namespace AngelPhoneTrack.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
+                    FirstName = table.Column<string>(type: "text", nullable: false),
+                    LastName = table.Column<string>(type: "text", nullable: false),
                     Pin = table.Column<string>(type: "text", nullable: false),
                     Admin = table.Column<bool>(type: "boolean", nullable: false),
                     Token = table.Column<string>(type: "text", nullable: false),
@@ -172,6 +180,9 @@ namespace AngelPhoneTrack.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Category = table.Column<string>(type: "text", nullable: false),
                     Completed = table.Column<bool>(type: "boolean", nullable: false),
+                    TemplateId = table.Column<int>(type: "integer", nullable: true),
+                    CompletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Timestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     LotId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>

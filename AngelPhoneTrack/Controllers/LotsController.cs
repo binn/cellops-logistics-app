@@ -39,6 +39,9 @@ namespace AngelPhoneTrack.Controllers
                     lot.ArchivedAt,
                     lot.Priority,
                     lot.Expiration,
+                    New = lot.Timestamp.AddHours(1) >= DateTimeOffset.UtcNow,
+                    DueSoon = DateTimeOffset.UtcNow >= lot.Expiration.AddHours(-1) && DateTimeOffset.UtcNow < lot.Expiration,
+                    Late = lot.Expiration <= DateTimeOffset.UtcNow,
                     Assignments = lot.Assignments.Select(x => new
                     {
                         x.Department.Id,
@@ -120,8 +123,8 @@ namespace AngelPhoneTrack.Controllers
             if (expiration.DayOfWeek == DayOfWeek.Sunday)
                 expiration = expiration.AddDays(1);
 
-            if (request.Priority == Priority.Urgent)
-                expiration = DateTimeOffset.UtcNow.Date.AddHours(16);
+            if (request.Priority == Priority.Immediate)
+                expiration = DateTimeOffset.UtcNow.Date.AddHours(22);
 
             lot.Expiration = expiration;
             lot.Priority = request.Priority;

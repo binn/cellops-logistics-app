@@ -19,7 +19,7 @@ namespace AngelPhoneTrack.Controllers
         {
             Employee? employee = await _ctx.Employees.Include(x => x.Department).FirstOrDefaultAsync(x => x.Pin == request.Pin);
             if (employee == null)
-                return Unauthorized(new { success = false, error = "UNAUTHORIZED", reason = "credentials.invalid" });
+                return Unauthorized(new { success = false, error = "Credentials invalid.", reason = "credentials.invalid" });
 
             employee.Token = Guid.NewGuid().ToString("N");
             await _ctx.SaveChangesAsync();

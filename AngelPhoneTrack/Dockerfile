@@ -5,13 +5,14 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS restore
 WORKDIR /src
-COPY . .
-RUN dotnet build "AngelPhoneTrack.csproj" -c Release -o /app/build
+COPY *.csproj .
+RUN dotnet restore
 
-FROM build AS publish
-RUN dotnet publish "AngelPhoneTrack.csproj" -c Release -o /app/publish /p:UseAppHost=false
+FROM restore AS publish
+COPY . .
+RUN dotnet publish -c Release -o /app/publish --no-restore /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

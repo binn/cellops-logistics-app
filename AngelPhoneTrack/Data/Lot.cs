@@ -25,6 +25,8 @@ namespace AngelPhoneTrack.Data
         public string? Model { get; set; }
         public bool Archived { get; set; }
         public DateTimeOffset? ArchivedAt { get; set; }
+        public Priority Priority { get; set; }
+        public DateTimeOffset Expiration { get; set; } = DateTimeOffset.UtcNow.AddHours(24);
 
         public virtual ICollection<Note> Notes { get; set; }
         public virtual ICollection<Audit> Audits { get; set; }

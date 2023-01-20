@@ -19,6 +19,7 @@ namespace AngelPhoneTrack.Controllers
         }
 
         [HttpPost("/lots/{lotId}/tasks")]
+        [AngelAuthorized(supervisor: true)]
         public async Task<IActionResult> UpdateLotTasksAsync(Guid lotId, [FromBody] int[] tasks)
         {
             var lot = await _ctx.Lots.FirstOrDefaultAsync(a => a.Id == lotId);
@@ -42,7 +43,7 @@ namespace AngelPhoneTrack.Controllers
                 return BadRequest(new { error = "Task doesn't exist." });
 
             task.Completed = completed;
-            task.Lot.CreateAudit(Employee!, Employee!.Department, completed ? "TASK_COMPLETED" : "TASK_UNCOMPLETED", "Task \"" + task.Name + "\" has been marked as \"" + (completed ? "completed" : "incomplete") + "\".");
+            task.Lot.CreateAudit(Employee!, Employee!.Department, completed ? "TASK_COMPLETED" : "TASK_UNCOMPLETED", "Task \"" + task.Name + "\" has been marked as " + (completed ? "completed" : "incomplete") + ".");
 
             if (task.Completed)
                 task.CompletedAt = DateTimeOffset.UtcNow;

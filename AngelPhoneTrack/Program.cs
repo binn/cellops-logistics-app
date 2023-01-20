@@ -29,7 +29,7 @@ namespace AngelPhoneTrack
             builder.Services.Configure<ApiBehaviorOptions>(o =>
             {
                 o.InvalidModelStateResponseFactory = (ctx) =>
-                    new BadRequestObjectResult(new { error = ctx.ModelState.SelectMany(x => x.Value?.Errors?.SelectMany(e => e?.ErrorMessage)) });
+                    new BadRequestObjectResult(new { error = ctx.ModelState.SelectMany(x => x.Value!.Errors!.Select(e => e!.ErrorMessage)).FirstOrDefault() });
             });
 
             var app = builder.Build();

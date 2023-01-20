@@ -18,7 +18,7 @@ namespace AngelPhoneTrack.Controllers
         public async Task<IActionResult> GetDepartmentsAsync()
         {
             return Ok(await _ctx.Departments
-                .Select(x => new { x.Id, x.Name, x.IsAssignable })
+                .Select(x => new { x.Id, x.Name, x.IsAssignable, x.Default })
                 .ToListAsync());
         }
     }

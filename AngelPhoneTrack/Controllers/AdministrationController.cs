@@ -25,13 +25,14 @@ namespace AngelPhoneTrack.Controllers
         public async Task<IActionResult> GetAllEmployees()
         {
             return Ok(await _ctx.Employees
-                .Where(x => x.Name != "Superuser")
+                .Where(x => x.FirstName != "Superuser")
                 .OrderByDescending(x => x.Id)
                 .Select(x => new
                 {
                     x.Id,
                     x.Pin,
-                    x.Name,
+                    x.FirstName,
+                    x.LastName,
                     x.Admin,
                     x.Supervisor,
                     x.Timestamp,
@@ -74,7 +75,7 @@ namespace AngelPhoneTrack.Controllers
             if(employee == null)
                 return BadRequest(new { error = "Employee doesn't exist." });
 
-            if (employee.Name == "Superuser")
+            if (employee.FirstName == "Superuser")
                 return BadRequest(new { error = "Cannot delete superuser account." });
 
             if (employee.Id == Employee!.Id)
@@ -131,10 +132,12 @@ namespace AngelPhoneTrack.Controllers
                     x.Id,
                     x.Name,
                     x.Description,
+                    x.Default,
                     Employees = x.Employees.Select(e => new
                     {
                         e.Id,
-                        e.Name,
+                        e.FirstName,
+                        e.LastName,
                         e.Admin,
                         e.Supervisor
                     })
@@ -156,6 +159,13 @@ namespace AngelPhoneTrack.Controllers
                 Default = request.Default,
                 IsAssignable = true
             };
+
+            if (department.Default)
+            {
+                var otherDefault = await _ctx.Departments.FirstOrDefaultAsync(x => x.Default);
+                if(otherDefault != null)
+                    otherDefault.Default = false;
+            }
 
             await _ctx.Departments.AddAsync(department);
             await _ctx.SaveChangesAsync();

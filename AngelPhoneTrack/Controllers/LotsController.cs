@@ -37,6 +37,8 @@ namespace AngelPhoneTrack.Controllers
                     lot.Timestamp,
                     lot.Archived,
                     lot.ArchivedAt,
+                    lot.Priority,
+                    lot.Expiration,
                     Assignments = lot.Assignments.Select(x => new
                     {
                         x.Department.Id,
@@ -44,7 +46,7 @@ namespace AngelPhoneTrack.Controllers
                     })
                 });
 
-            if(!string.IsNullOrWhiteSpace(lotNo))
+            if (!string.IsNullOrWhiteSpace(lotNo))
                 query = query.Where(x => x.LotNo.Contains(lotNo.ToUpper())); // updated this logic cuz why not
 
             var results = await query.ToPagedListAsync(page, 25);
@@ -64,21 +66,27 @@ namespace AngelPhoneTrack.Controllers
             if (request.Count < 1)
                 return BadRequest(new { error = "Lot requires at least one item." });
 
+            if (string.IsNullOrWhiteSpace(request.LotNo))
+                return BadRequest(new { error = "Lot number must not be blank." });
+
             bool existsAlready = await _ctx.Lots.AnyAsync(x => x.LotNo == request.LotNo);
             if (existsAlready)
                 return BadRequest(new { error = "Lot already exists." });
+
+            if (request.Expiration != "1h" && request.Expiration != "24h" && request.Expiration != "48h" && request.Expiration != "72h" && request.Expiration != "1w")
+                return BadRequest(new { error = "Bad expiration time." });
 
             Department? assignedDepartment = await _ctx.Departments.FindAsync(request.Department);
             if (assignedDepartment == null)
                 return BadRequest(new { error = "Department doesn't exist." });
 
-            var lot = new Lot(request.LotNo, request.Count);
+            var lot = new Lot(request.LotNo.Trim(), request.Count);
             var tasks = request.Tasks.Where(x => x > 0).ToList();
             var taskTemplates = await _ctx.Templates.Where(x => tasks.Contains(x.Id)).ToListAsync();
             var departments = await _ctx.Departments.Where(x => x.IsAssignable).ToListAsync();
             lot.Model = request.Model;
 
-            if(request.Grade != "NEW" && request.Grade != "CPO" && request.Grade != "UNKNOWN")
+            if (request.Grade != "NEW" && request.Grade != "CPO" && request.Grade != "UNKNOWN")
             {
                 if (request.Grade.Length > 2)
                     return BadRequest(new { error = "Invalid grade!" });
@@ -94,8 +102,30 @@ namespace AngelPhoneTrack.Controllers
                 }
             }
 
-            lot.Grade = request.Grade;
+            DateTimeOffset expiration;
 
+            expiration = request.Expiration switch
+            {
+                "1h" => DateTimeOffset.UtcNow.AddMinutes(75),
+                "24h" => DateTimeOffset.UtcNow.AddDays(1),
+                "48h" => DateTimeOffset.UtcNow.AddDays(2),
+                "72h" => DateTimeOffset.UtcNow.AddDays(3),
+                "1w" => DateTimeOffset.UtcNow.AddDays(5),
+                _ => DateTimeOffset.UtcNow.AddMinutes(75),
+            };
+
+            if (expiration.DayOfWeek == DayOfWeek.Saturday)
+                expiration = expiration.AddDays(2);
+
+            if (expiration.DayOfWeek == DayOfWeek.Sunday)
+                expiration = expiration.AddDays(1);
+
+            if (request.Priority == Priority.Urgent)
+                expiration = DateTimeOffset.UtcNow.Date.AddHours(16);
+
+            lot.Expiration = expiration;
+            lot.Priority = request.Priority;
+            lot.Grade = request.Grade;
             foreach (var task in taskTemplates)
                 lot.CreateTask(task.Template, task.Category, task.Id);
 
@@ -247,10 +277,12 @@ namespace AngelPhoneTrack.Controllers
                     x.Count,
                     x.Model,
                     x.Grade,
-                    x.Timestamp,
-                    x.Tasks,
+                    x.Priority,
                     x.Archived,
+                    x.Timestamp,
                     x.ArchivedAt,
+                    x.Expiration,
+                    x.Tasks,
                     Assignments = x.Assignments.Select(x => new
                     {
                         x.Department.Id,
@@ -297,6 +329,6 @@ namespace AngelPhoneTrack.Controllers
         }
 
         public record LotAssignmentRequest(int Count, int Id);
-        public record CreateLotRequest(string LotNo, int Count, int Department, int[] Tasks, string Model, string Grade);
+        public record CreateLotRequest(string LotNo, int Count, int Department, int[] Tasks, string Model, string Grade, Priority Priority, string Expiration);
     }
 }

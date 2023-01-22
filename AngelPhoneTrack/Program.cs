@@ -3,6 +3,7 @@ using AngelPhoneTrack.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Telegram.Bot;
 
 namespace AngelPhoneTrack
 {
@@ -11,7 +12,9 @@ namespace AngelPhoneTrack
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            var bot = new TelegramBotClient(builder.Configuration["TelegramToken"]!);
+            builder.Services.AddSingleton(bot);
+            
             builder.Services.AddControllers();
             builder.Services.AddDbContext<AngelContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("MAIN")));
 

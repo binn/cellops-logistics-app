@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using Telegram.Bot;
 
 namespace AngelPhoneTrack.Controllers
 {
@@ -14,10 +15,12 @@ namespace AngelPhoneTrack.Controllers
     public class LotsController : AngelControllerBase
     {
         private readonly AngelContext _ctx;
+        private readonly TelegramBotClient _bot;
 
-        public LotsController(AngelContext ctx)
+        public LotsController(AngelContext ctx, TelegramBotClient bot)
         {
             _ctx = ctx;
+            _bot = bot;
         }
 
         [HttpGet]
@@ -147,6 +150,8 @@ namespace AngelPhoneTrack.Controllers
             lot.CreateAudit(Employee!, Employee!.Department, "LOT_CREATED");
             await _ctx.Lots.AddAsync(lot);
             await _ctx.SaveChangesAsync();
+
+            await _bot.SendTextMessageAsync(-1001590253664, $"Lot {lot.LotNo} recieved in {assignedDepartment.Name} with {lot.Count} of {lot.Model}.\n(triggered by: {Employee!.Name})");
 
             return Ok(new
             {

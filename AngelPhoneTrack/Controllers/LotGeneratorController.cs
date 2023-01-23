@@ -5,6 +5,7 @@ using jsreport.Local;
 using jsreport.Types;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace AngelPhoneTrack.Controllers
@@ -58,11 +59,23 @@ namespace AngelPhoneTrack.Controllers
                 DueSoon = DateTimeOffset.UtcNow >= lot.Expiration.AddHours(-1) && DateTimeOffset.UtcNow < lot.Expiration,
                 Late = lot.Expiration <= DateTimeOffset.UtcNow
             };
+            var dataSerialized = JsonSerializer.Serialize(data, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
+            return Redirect("https://angelpt-reports-rqed7.ondigitalocean.app/?incoming=" + dataSerialized);
+
             try
             {
-
-                var dataSerialized = JsonSerializer.Serialize(data, new JsonSerializerOptions(JsonSerializerDefaults.Web));
-                _rs ??= new LocalReporting().UseBinary(JsReportBinary.GetBinary()).AsUtility().Create();
+                
+                _rs ??= new LocalReporting()
+                    .Configure(c => { c.HttpPort = 5483; return c; })
+                    .UseBinary(
+                        RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+                        JsReportBinary.GetBinary() :
+                        jsreport.Binary.Linux.JsReportBinary.GetBinary()
+                    )
+                    .KillRunningJsReportProcesses()
+                    .AsUtility()
+                    .Create();
 
                 Console.WriteLine(dataSerialized);
                 var rr = new RenderRequest()
@@ -75,7 +88,6 @@ namespace AngelPhoneTrack.Controllers
                         {
                             Url = "https://angelpt-reports-rqed7.ondigitalocean.app/?incoming=" + dataSerialized,
                             WaitForJS = true,
-                            WaitForNetworkIddle = true,
                             MarginBottom = "20",
                             MarginTop = "20",
                             MarginLeft = "50",

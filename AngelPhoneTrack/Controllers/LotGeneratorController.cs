@@ -11,7 +11,6 @@ namespace AngelPhoneTrack.Controllers
 {
     [ApiController]
     [Route("/lots")]
-    [AngelAuthorized]
     public class LotGeneratorController : AngelControllerBase
     {
         private readonly AngelContext _ctx;
@@ -21,7 +20,7 @@ namespace AngelPhoneTrack.Controllers
             _ctx = ctx;
 
         [HttpGet("{id}/report")]
-        public async Task<IActionResult> GetReportAsync(Guid id)
+        public async Task<IActionResult> GetReportAsync(Guid id, [FromQuery] string name)
         {
             var lot = await _ctx.Lots
                 .Include(x => x.Audits)
@@ -55,7 +54,7 @@ namespace AngelPhoneTrack.Controllers
                 lot.Grade,
                 lot.Model,
                 lot.Count,
-                PrintedBy = Employee?.Name ?? "Angel Cellular LLC",
+                PrintedBy = Employee?.Name ?? name ?? "Angel Cellular LLC",
                 DueSoon = DateTimeOffset.UtcNow >= lot.Expiration.AddHours(-1) && DateTimeOffset.UtcNow < lot.Expiration,
                 Late = lot.Expiration <= DateTimeOffset.UtcNow
             };

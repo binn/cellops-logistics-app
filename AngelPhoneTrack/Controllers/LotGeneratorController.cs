@@ -58,37 +58,44 @@ namespace AngelPhoneTrack.Controllers
                 DueSoon = DateTimeOffset.UtcNow >= lot.Expiration.AddHours(-1) && DateTimeOffset.UtcNow < lot.Expiration,
                 Late = lot.Expiration <= DateTimeOffset.UtcNow
             };
-
-            var dataSerialized = JsonSerializer.Serialize(data, new JsonSerializerOptions(JsonSerializerDefaults.Web));
-            _rs ??= new LocalReporting().UseBinary(JsReportBinary.GetBinary()).AsUtility().Create();
-
-            Console.WriteLine(dataSerialized);
-            var rr = new RenderRequest()
+            try
             {
-                Template = new Template()
-                {
-                    Recipe = Recipe.ChromePdf,
-                    Engine = Engine.None,
-                    Chrome = new Chrome()
-                    {
-                        Url = "https://angelpt-reports-rqed7.ondigitalocean.app/?incoming=" + dataSerialized,
-                        WaitForJS = true,
-                        WaitForNetworkIddle = true,
-                        MarginBottom = "20",
-                        MarginTop = "20",
-                        MarginLeft = "50",
-                        MarginRight = "50"
-                    },
-                    Content = ""
-                },
-                Options = new RenderOptions()
-                {
-                    Timeout = 4000
-                }
-            };
 
-            var report = await _rs.RenderAsync(rr);
-            return File(report.Content, report.Meta.ContentType);
+                var dataSerialized = JsonSerializer.Serialize(data, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+                _rs ??= new LocalReporting().UseBinary(JsReportBinary.GetBinary()).AsUtility().Create();
+
+                Console.WriteLine(dataSerialized);
+                var rr = new RenderRequest()
+                {
+                    Template = new Template()
+                    {
+                        Recipe = Recipe.ChromePdf,
+                        Engine = Engine.None,
+                        Chrome = new Chrome()
+                        {
+                            Url = "https://angelpt-reports-rqed7.ondigitalocean.app/?incoming=" + dataSerialized,
+                            WaitForJS = true,
+                            WaitForNetworkIddle = true,
+                            MarginBottom = "20",
+                            MarginTop = "20",
+                            MarginLeft = "50",
+                            MarginRight = "50"
+                        },
+                        Content = ""
+                    },
+                    Options = new RenderOptions()
+                    {
+                        Timeout = 4000
+                    }
+                };
+
+                var report = await _rs.RenderAsync(rr);
+                return File(report.Content, report.Meta.ContentType);
+            }
+            catch(Exception exception)
+            {
+                return Content(exception.ToString(), "text/plain");
+            }
         }
     }
 }

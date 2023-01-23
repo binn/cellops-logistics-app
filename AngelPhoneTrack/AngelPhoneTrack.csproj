@@ -9,6 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="jsreport.Binary" Version="3.9.0" />
+    <PackageReference Include="jsreport.Binary.Linux" Version="3.9.0" />
+    <PackageReference Include="jsreport.Local" Version="3.8.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.1">
       <PrivateAssets>all</PrivateAssets>

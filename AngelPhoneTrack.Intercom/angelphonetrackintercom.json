@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "angelphonetrack",
+  "private_key_id": "4e8e24bb56e7ccf6299cd940fc6480321b111543",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCeTznPXzAsqM71\nXDLrex9N/+UT5SMa7EWwZpFGIzzZXRWkhz3q3WUOPIg+m6Ur4lt9SfCH3KhtjYhu\nCyXvliZ28k75r8o5xcIvn1pL8NohJ4YSSZoNB52rxRrbtmjAnGq6N6rsCZdAh9AK\nN6OxCtAzRkTVIY4qFsI+JFtucarxUXL9/Q3apbRt+rhL8rsJyLJzOlSmNlQOJhNj\nHO4inQ+BjbgBx7nj/YT+bOZYSQW89t2r6gskVjUNNd2llJnOnZJufS8g7EA510Yk\nlDOFAp4pXoL9NnmvU4n57bwictIqXYqsAaFpWIaMUI0MZw9p6/dgcg3K78hTtqKA\n6W9+WYybAgMBAAECggEAAjIdHig21de9jx+pQSTjCUTsW3tJIl12lfzGNQ/WDznA\nTBjoHfLWLP1f8mZcQyCPnkxBPtErsOFOrCARdaJChFHWEJaEmoqIp/pw2S7NB7qx\nnF1S+q1JXZGNTtDX4RwKSuzsvPthEq8PjqS464K34o4t9DrT6veH2C7O6dg/w7sU\n4FiObBE/Yce7AuwBGH8S0gLyxSiIt4/g91Pzl4mwAdKPwP0qM8k6NU8NfAlIFW+L\nyF6gkWGX8N68iTz3xJULUQrfEio1TsvgUiyEwOl4/8HiaJ1jJFA5kKG/j+sMcrJg\nqnbRuqWaUwuc0r8V+Q0IxDDwp1Y0/SV2i8isve5V2QKBgQDZbmsSBBU8BAICALyg\n2KXobefWcLwB5uYpXLFapR/uSYsCFm6EGfuz49xmCdUNC2rEEjJSubP5I7owOhYf\nYtHbM3J4XiYGMyUvsOu0I7C8tvr5wxOYJ10xy8e8gwQ9f6aLQwSrBMs9wfEJ84El\nOv1RpsexYxsO3ffVhekqNrLkZQKBgQC6ZBPhMH8qHQ4srO6QVbMs2Sv4r+aAUDMX\nlzNF55V6We1tGq9VoHybuZxjRhHuWljIO9Ht7Gs5z2HvU/oce+bH0oE/Vx0d3K5k\nuvSOv5oApI0rlgEndY2c8Bodkb3lkNqpjt8OMyxpjveg2UaXoLU/JizMamekhRuL\nAor3GSkc/wKBgHhfUtNkg0T4iwwE0GjTx/XHcsQbIVqENAPOFzmxlN3cxSJgvMpR\ngDF1An1TECnqmi72S/nUaTiSeO9eGQVDNh7+em784FwqUHn4nmTaJWw0ePlw8BYa\nJNP+lxNcDSrm0pLihWEQhFwqVIFH18V+xONBS+h+j2pJpH0HZ7BBHASpAoGBALWJ\nP2t2ZoRH5ERS8c+WCHrH0fHWsHOMqRZy5zdQhN+zsnEvKlIFixfIwa5W0qQJTqtG\nyAIo345gk4wbiGAxtOYt+kAMwokRJLFq/UIDDyVNH0myQdGCxrhxiZ3/EqsCWFYI\nlusnoDv3SOtac0y+84hb0AoQIH22Pss3YM2lrctVAoGBANIMZ8nMlQ1nQfHDnIIG\nD6GRYIeyVgVrYienncV20iqxBUiPHACJcL9SnHn3kr6wSUwKOwpYL66N9YpWL+ty\nl7w3DJxVDgGh/ivj7MjaPuHYLytCpkN6ea0dWgg7Mq414pSnpBImvfkZYF+wRxba\nO9peSZvMxED+AxbFQS0HH91b\n-----END PRIVATE KEY-----\n",
+  "client_email": "angelphonetrackintercom@angelphonetrack.iam.gserviceaccount.com",
+  "client_id": "112131552465552436581",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/angelphonetrackintercom%40angelphonetrack.iam.gserviceaccount.com"
+}

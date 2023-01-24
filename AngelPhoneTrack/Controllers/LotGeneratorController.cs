@@ -59,8 +59,8 @@ namespace AngelPhoneTrack.Controllers
                 DueSoon = DateTimeOffset.UtcNow >= lot.Expiration.AddHours(-1) && DateTimeOffset.UtcNow < lot.Expiration,
                 Late = lot.Expiration <= DateTimeOffset.UtcNow
             };
-            var dataSerialized = JsonSerializer.Serialize(data, new JsonSerializerOptions(JsonSerializerDefaults.Web));
 
+            var dataSerialized = JsonSerializer.Serialize(data, new JsonSerializerOptions(JsonSerializerDefaults.Web));
             return Redirect("https://angelpt-reports-rqed7.ondigitalocean.app/?incoming=" + dataSerialized);
 
             try

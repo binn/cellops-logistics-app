@@ -1,8 +1,10 @@
 ﻿using AngelPhoneTrack.Data;
 using AngelPhoneTrack.Filters;
+using AngelPhoneTrack.Models;
 using AngelPhoneTrack.Services;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using Telegram.Bot;
@@ -16,11 +18,13 @@ namespace AngelPhoneTrack.Controllers
     {
         private readonly AngelContext _ctx;
         private readonly TelegramBotClient _bot;
+        private readonly IHubContext<RealtimeHub> _hub;
 
-        public LotsController(AngelContext ctx, TelegramBotClient bot)
+        public LotsController(AngelContext ctx, TelegramBotClient bot, IHubContext<RealtimeHub> hub)
         {
             _ctx = ctx;
             _bot = bot;
+            _hub = hub;
         }
 
         [HttpGet]
@@ -211,7 +215,11 @@ namespace AngelPhoneTrack.Controllers
         [HttpPost("{id}/assignments")]
         public async Task<IActionResult> UpdateLotAssignmentsAsync(Guid id, [FromBody] LotAssignmentRequest[] assignments)
         {
-            var lot = await _ctx.Lots.Include(x => x.Assignments).ThenInclude(x => x.Department).FirstOrDefaultAsync(x => x.Id == id);
+            var lot = await _ctx.Lots
+                .Include(x => x.Assignments)
+                    .ThenInclude(x => x.Department)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            
             if (lot == null)
                 return BadRequest(new { error = "Lot doesn't exist." });
 
@@ -227,21 +235,43 @@ namespace AngelPhoneTrack.Controllers
             if (assignments.All(x => lot.Assignments.Any(a => a.Department.Id == x.Id && a.Count == x.Count)))
                 return BadRequest(new { error = "No change detected." });
 
-            var oldAssignments = lot.Assignments.Select(x => new { x.Department.Id, x.Count }).ToArray();
+            bool hasOtherReassignments = await _ctx.Audits.AnyAsync(x => x.Lot.Id == lot.Id && x.Type == "LOT_REASSIGNED");
+
+            Dictionary<string, int> updatedDepartments = new();
+            var oldAssignments = lot.Assignments.Select(x => new AssignmentsUpdate(x.Department, x.Count)).ToArray();
             foreach (var assignment in lot.Assignments)
             {
                 var newAssignment = assignments.FirstOrDefault(x => x.Id == assignment.Department.Id);
+                if (newAssignment!.Count > assignment.Count)
+                    updatedDepartments.Add(assignment.Department.Name.ToUpper(), newAssignment!.Count);
+
                 assignment.Count = newAssignment!.Count;
             }
 
+            var updated = lot.Assignments.Select(x => new AssignmentsUpdate(x.Department, x.Count)).ToArray();
             lot.CreateAudit(Employee!, Employee!.Department, "LOT_REASSIGNED",
                 JsonSerializer.Serialize(new
                 {
                     old = oldAssignments,
-                    updated = lot.Assignments.Select(x => new { x.Department.Id, x.Count })
+                    updated,
                 }, new JsonSerializerOptions(JsonSerializerDefaults.Web)));
 
             await _ctx.SaveChangesAsync();
+
+            foreach(var dept in updatedDepartments)
+            {
+                Console.WriteLine(dept.Key + ": " + dept.Value);
+                await _hub.Clients.Group(dept.Key).SendAsync("LotAssignmentsUpdate",
+                        dept.Value,
+                        lot.Priority,
+                        lot.Count,
+                        lot.Model,
+                        lot.Grade,
+                        lot.Expiration,
+                        lot.LotNo
+                    );
+            }
+
             return Ok(new
             {
                 lot.Id,

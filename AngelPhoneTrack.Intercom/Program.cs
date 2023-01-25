@@ -11,6 +11,7 @@ namespace AngelPhoneTrack.Intercom
 {
     internal class Program
     {
+        static int reconnectAttempt = 0;
         static void Main(string[] args)
         {
             var department = File.ReadAllText("department.txt");
@@ -27,7 +28,12 @@ namespace AngelPhoneTrack.Intercom
 
             connection.Closed += async (error) =>
             {
-                await Task.Delay(new Random().Next(0, 5) * 1000);
+                reconnectAttempt++;
+                int reconnectDelay = new Random().Next(0, 5 * reconnectAttempt) * 1000;
+                if(reconnectDelay > (120 * 1000))
+                    reconnectDelay = (120 * 1000);
+
+                await Task.Delay(reconnectDelay);
                 await connection.StartAsync();
             };
 

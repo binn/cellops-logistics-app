@@ -17,7 +17,7 @@ namespace AngelPhoneTrack.Intercom
             Console.WriteLine("Connecting as department: " + department);
 
             var connection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:7236/realtime?department=" + department.ToUpper())
+                .WithUrl("https://track.angelcellular.com/api/realtime?department=" + department.ToUpper())
                 .Build();
 
             var client = new TextToSpeechClientBuilder

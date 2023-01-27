@@ -71,6 +71,7 @@ namespace AngelPhoneTrack.Controllers
         }
 
         [HttpPost]
+        [AngelAuthorized(supervisor: true)]
         public async Task<IActionResult> CreateLotAsync([FromBody] CreateLotRequest request)
         {
             if (request.Count < 1)

@@ -244,8 +244,11 @@ namespace AngelPhoneTrack.Controllers
             {
                 var newAssignment = assignments.FirstOrDefault(x => x.Id == assignment.Department.Id);
                 if (newAssignment!.Count > assignment.Count)
+                {
+                    assignment.Received = false;
                     updatedDepartments.Add(assignment.Department.Name.ToUpper(), newAssignment!.Count);
-
+                }
+                
                 assignment.Count = newAssignment!.Count;
             }
 

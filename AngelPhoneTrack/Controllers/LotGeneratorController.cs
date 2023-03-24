@@ -22,6 +22,7 @@ namespace AngelPhoneTrack.Controllers
                 .Include(x => x.Assignments)
                     .ThenInclude(x => x.Department)
                 .Include(x => x.Tasks)
+                .Include(x => x.Notes)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             if (lot == null)
@@ -43,6 +44,12 @@ namespace AngelPhoneTrack.Controllers
                     x.Name,
                     x.Completed,
                     x.Category
+                }),
+                Notes = lot.Notes.Select(x => new
+                {
+                    x.Data,
+                    x.CreatedBy,
+                    x.Timestamp
                 }),
                 lot.Priority,
                 lot.Expiration,

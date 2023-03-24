@@ -12,7 +12,7 @@ namespace AngelPhoneTrack.Intercom
     internal class Program
     {
         static int reconnectAttempt = 0;
-        static void Main(string[] args)
+        static void Main()
         {
             var department = File.ReadAllText("department.txt");
             Console.WriteLine("Connecting as department: " + department);
@@ -44,7 +44,7 @@ namespace AngelPhoneTrack.Intercom
                 string lotNoProcessed = string.Join("", lotNo.Select(x => (" " + x).Replace("0", "Zero"))).Trim();
 
                 string text = $"Attention, {department} Department: Lot number: {lotNoProcessed}; "
-                 + $"is being sent to you with {priority.ToString()} priority. This transfer will contain {reassignment} devices.";
+                 + $"is being sent to you with {priority} priority. This transfer will contain {reassignment} devices.";
                 await PlayText(text);
             });
 
@@ -54,7 +54,7 @@ namespace AngelPhoneTrack.Intercom
                 Console.WriteLine("Received late notification for " + lotNo);
                 string lotNoProcessed = string.Join("", lotNo.Select(x => (" " + x).Replace("0", "Zero"))).Trim();
                 string text = $"Attention, {department} Department: This is a reminder by {name} that, Lot number: {lotNoProcessed}; "
-                 + $"is currently late. This lot is currently marked as {priority.ToString()} priority. Please prioritize this lot and complete it immediately.";
+                 + $"is currently late. This lot is currently marked as {priority} priority. Please prioritize this lot and complete it immediately.";
                 
                 await PlayText(text);
             });

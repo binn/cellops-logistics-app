@@ -1,11 +1,6 @@
 ﻿using AngelPhoneTrack.Data;
-using AngelPhoneTrack.Filters;
-using jsreport.Binary;
-using jsreport.Local;
-using jsreport.Types;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace AngelPhoneTrack.Controllers
@@ -15,7 +10,6 @@ namespace AngelPhoneTrack.Controllers
     public class LotGeneratorController : AngelControllerBase
     {
         private readonly AngelContext _ctx;
-        private ILocalUtilityReportingService? _rs;
 
         public LotGeneratorController(AngelContext ctx) =>
             _ctx = ctx;
@@ -62,52 +56,6 @@ namespace AngelPhoneTrack.Controllers
 
             var dataSerialized = JsonSerializer.Serialize(data, new JsonSerializerOptions(JsonSerializerDefaults.Web));
             return Redirect("https://angelpt-reports-rqed7.ondigitalocean.app/?incoming=" + dataSerialized);
-
-            try
-            {
-                
-                _rs ??= new LocalReporting()
-                    .Configure(c => { c.HttpPort = 5483; return c; })
-                    .UseBinary(
-                        RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-                        JsReportBinary.GetBinary() :
-                        jsreport.Binary.Linux.JsReportBinary.GetBinary()
-                    )
-                    .KillRunningJsReportProcesses()
-                    .AsUtility()
-                    .Create();
-
-                Console.WriteLine(dataSerialized);
-                var rr = new RenderRequest()
-                {
-                    Template = new Template()
-                    {
-                        Recipe = Recipe.ChromePdf,
-                        Engine = Engine.None,
-                        Chrome = new Chrome()
-                        {
-                            Url = "https://angelpt-reports-rqed7.ondigitalocean.app/?incoming=" + dataSerialized,
-                            WaitForJS = true,
-                            MarginBottom = "20",
-                            MarginTop = "20",
-                            MarginLeft = "50",
-                            MarginRight = "50"
-                        },
-                        Content = ""
-                    },
-                    Options = new RenderOptions()
-                    {
-                        Timeout = 4000
-                    }
-                };
-
-                var report = await _rs.RenderAsync(rr);
-                return File(report.Content, report.Meta.ContentType);
-            }
-            catch(Exception exception)
-            {
-                return Content(exception.ToString(), "text/plain");
-            }
         }
     }
 }

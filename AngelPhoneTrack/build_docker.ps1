@@ -1,0 +1,1 @@
+docker build -t registry.digitalocean.com/angelcellular/angelphonetrack .; docker push registry.digitalocean.com/angelcellular/angelphonetrack

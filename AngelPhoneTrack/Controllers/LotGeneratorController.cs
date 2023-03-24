@@ -1,6 +1,7 @@
 ﻿using AngelPhoneTrack.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 using System.Text.Json;
 
 namespace AngelPhoneTrack.Controllers
@@ -62,7 +63,9 @@ namespace AngelPhoneTrack.Controllers
             };
 
             var dataSerialized = JsonSerializer.Serialize(data, new JsonSerializerOptions(JsonSerializerDefaults.Web));
-            return Redirect("https://angelpt-reports-rqed7.ondigitalocean.app/?incoming=" + dataSerialized);
+            var urlEncoded = WebUtility.UrlEncode(dataSerialized);
+
+            return Redirect("https://angelpt-reports-rqed7.ondigitalocean.app/?incoming=" + urlEncoded);
         }
     }
 }

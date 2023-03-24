@@ -5,6 +5,7 @@
         Low = 0,
         Normal = 1,
         Urgent = 2,
-        Immediate = 3
+        Immediate = 3,
+        Partial = 4,
     }
 }

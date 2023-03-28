@@ -23,6 +23,7 @@ namespace AngelPhoneTrack.Data
         public string LotNo { get; set; } = default!; // another key to search by
         public string Grade { get; set; } = default!;
         public string? Model { get; set; }
+        public string? GB { get; set; }
         public bool Archived { get; set; }
         public DateTimeOffset? ArchivedAt { get; set; }
         public Priority Priority { get; set; }

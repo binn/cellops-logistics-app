@@ -28,7 +28,7 @@ namespace AngelPhoneTrack.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetLotsAsync([FromQuery] int page = 1, [FromQuery] string? lotNo = null, [FromQuery] bool archived = false)
+        public async Task<IActionResult> GetLotsAsync([FromQuery] int page = 1, [FromQuery] bool department = false, [FromQuery] string? lotNo = null, [FromQuery] bool archived = false)
         {
             page = page < 1 ? 1 : page;
             var query = _ctx.Lots
@@ -58,6 +58,9 @@ namespace AngelPhoneTrack.Controllers
 
             if (!string.IsNullOrWhiteSpace(lotNo))
                 query = query.Where(x => x.LotNo.Contains(lotNo.ToUpper())); // updated this logic cuz why not
+
+            if (department)
+                query = query.Where(x => x.Assignments.Any(e => e.Count >= 1 && e.Id == Employee!.Department.Id));
 
             var results = await query.ToPagedListAsync(page, 25);
 
@@ -97,7 +100,7 @@ namespace AngelPhoneTrack.Controllers
             var departments = await _ctx.Departments.Where(x => x.IsAssignable).ToListAsync();
             lot.Model = request.Model;
 
-            if (request.Grade != "NEW" && request.Grade != "CPO" && request.Grade != "UNKNOWN")
+            if (request.Grade != "NEW" && request.Grade != "CPO" && request.Grade != "UNKNOWN" && request.Grade != "AA+")
             {
                 if (request.Grade.Length > 2)
                     return BadRequest(new { error = "Invalid grade!" });
@@ -137,6 +140,7 @@ namespace AngelPhoneTrack.Controllers
             lot.Expiration = expiration;
             lot.Priority = request.Priority;
             lot.Grade = request.Grade;
+            lot.GB = request.GB;
             foreach (var task in taskTemplates)
                 lot.CreateTask(task.Template, task.Category, task.Id);
 
@@ -328,6 +332,7 @@ namespace AngelPhoneTrack.Controllers
                     Assignments = x.Assignments.Select(x => new
                     {
                         x.Department.Id,
+                        x.Received,
                         x.Count
                     }),
                     Notes = x.Notes.OrderByDescending(x => x.Timestamp).Select(x => new
@@ -371,6 +376,6 @@ namespace AngelPhoneTrack.Controllers
         }
 
         public record LotAssignmentRequest(int Count, int Id);
-        public record CreateLotRequest(string LotNo, int Count, int Department, int[] Tasks, string Model, string Grade, Priority Priority, string Expiration);
+        public record CreateLotRequest(string LotNo, int Count, int Department, int[] Tasks, string Model, string Grade, Priority Priority, string Expiration, string GB);
     }
 }

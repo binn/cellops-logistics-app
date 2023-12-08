@@ -160,7 +160,7 @@ namespace AngelPhoneTrack.Controllers
             await _ctx.Lots.AddAsync(lot);
             await _ctx.SaveChangesAsync();
 
-            await _bot.SendTextMessageAsync(-1001590253664, $"Lot {lot.LotNo} recieved in {assignedDepartment.Name} with {lot.Count} of {lot.Model}.\n(triggered by: {Employee!.Name})");
+            await _bot.SendTextMessageAsync(-1001590253664, $"{lot.LotNo} created in {assignedDepartment.Name} with {lot.Count} {lot.Model}.\n(triggered by: {Employee!.Name})");
 
             return Ok(new
             {
@@ -173,6 +173,8 @@ namespace AngelPhoneTrack.Controllers
                 Assignments = lot.Assignments.Select(x => new
                 {
                     x.Department.Id,
+                    x.IncomingDepartmentId,
+                    x.Received,
                     x.Count
                 })
             });
@@ -249,6 +251,7 @@ namespace AngelPhoneTrack.Controllers
                 var newAssignment = assignments.FirstOrDefault(x => x.Id == assignment.Department.Id);
                 if (newAssignment!.Count > assignment.Count)
                 {
+                    assignment.IncomingDepartmentId = Employee!.Department.Id;
                     assignment.Received = false;
                     updatedDepartments.Add(assignment.Department.Name.ToUpper(), newAssignment!.Count);
                 }
@@ -291,9 +294,23 @@ namespace AngelPhoneTrack.Controllers
                 Assignments = lot.Assignments.Select(x => new
                 {
                     x.Department.Id,
-                    x.Count
+                    x.Count,
                 })
             });
+        }
+
+        [HttpPost("{id}/assignments/ack")]
+        [AngelAuthorized(supervisor: true)]
+        public async Task<IActionResult> AcknowledgeLotAssignmentAsync(Guid id)
+        {
+            var assignment = await _ctx.Assignments.FirstOrDefaultAsync(x => x.Lot.Id == id && x.Department.Id == Employee!.Department.Id);
+            if (assignment == null)
+                return BadRequest(new { error = "Lot assignment doesn't exist." });
+
+            assignment.Received = true;
+            await _ctx.SaveChangesAsync();
+
+            return NoContent();
         }
 
         [HttpGet("/search/{lotNo}")]
@@ -332,6 +349,7 @@ namespace AngelPhoneTrack.Controllers
                     Assignments = x.Assignments.Select(x => new
                     {
                         x.Department.Id,
+                        x.IncomingDepartmentId,
                         x.Received,
                         x.Count
                     }),

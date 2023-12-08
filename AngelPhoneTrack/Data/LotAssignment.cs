@@ -7,6 +7,7 @@
         public Lot Lot { get; set; } = default!;
         public bool Received { get; set; } = true;
         public Department Department { get; set; } = default!;
+        public int? IncomingDepartmentId { get; set; }
         public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
     }
 }

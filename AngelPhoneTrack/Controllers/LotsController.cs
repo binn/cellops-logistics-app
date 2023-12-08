@@ -242,6 +242,9 @@ namespace AngelPhoneTrack.Controllers
             if (assignments.All(x => lot.Assignments.Any(a => a.Department.Id == x.Id && a.Count == x.Count)))
                 return BadRequest(new { error = "No change detected." });
 
+            if (lot.Assignments.Any(x => !x.Received))
+                return BadRequest(new { error = "Lot has not been received everywhere." });
+
             bool hasOtherReassignments = await _ctx.Audits.AnyAsync(x => x.Lot.Id == lot.Id && x.Type == "LOT_REASSIGNED");
 
             Dictionary<string, int> updatedDepartments = new();

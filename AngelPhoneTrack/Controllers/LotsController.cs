@@ -308,7 +308,15 @@ namespace AngelPhoneTrack.Controllers
         {
             var assignment = await _ctx.Assignments.FirstOrDefaultAsync(x => x.Lot.Id == id && x.Department.Id == Employee!.Department.Id);
             if (assignment == null)
-                return BadRequest(new { error = "Lot assignment doesn't exist." });
+            {
+                if (Employee!.Department.Name.ToUpper() == "MUSTAFA")
+                {
+                    assignment = await _ctx.Assignments.FirstOrDefaultAsync(x => x.Lot.Id == id && x.Received == false);
+                }
+
+                if(assignment == null)
+                    return BadRequest(new { error = "Lot assignment doesn't exist." });
+            }
 
             assignment.Received = true;
             await _ctx.SaveChangesAsync();

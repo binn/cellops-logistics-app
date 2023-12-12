@@ -306,7 +306,7 @@ namespace AngelPhoneTrack.Controllers
         [AngelAuthorized(supervisor: true)]
         public async Task<IActionResult> AcknowledgeLotAssignmentAsync(Guid id)
         {
-            var assignment = await _ctx.Assignments.FirstOrDefaultAsync(x => x.Lot.Id == id && x.Department.Id == Employee!.Department.Id);
+            var assignment = await _ctx.Assignments.FirstOrDefaultAsync(x => x.Lot.Id == id && x.Department.Id == Employee!.Department.Id && x.Received == false);
             if (assignment == null)
             {
                 if (Employee!.Department.Name.ToUpper() == "MUSTAFA")
@@ -330,7 +330,7 @@ namespace AngelPhoneTrack.Controllers
             Guid? lot = await _ctx.Lots.Where(x => x.LotNo == lotNo).Select(x => x.Id).FirstOrDefaultAsync();
             if (lot == null)
                 return BadRequest(new { error = "Lot doesn't exist. " });
-
+            
             return await GetLotAsync(lot.GetValueOrDefault());
         }
 
